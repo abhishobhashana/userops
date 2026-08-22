@@ -1,0 +1,69 @@
+### Health check
+GET http://localhost:5000/api/v1/health
+
+
+### Create Super Admin
+POST http://localhost:5000/api/v1/auth/bootstrap
+Content-Type: application/json
+
+{
+  "name": "Abhi",
+  "email": "abhi@example.com",
+  "password": "ChangeMe123!"
+}
+
+### Login
+POST http://localhost:5000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "abhi@example.com",
+  "password": "ChangeMe123!"
+}
+
+### Current User
+GET http://localhost:5000/api/v1/auth/me
+
+### Get Users
+GET http://localhost:5000/api/v1/users
+
+### Create User
+POST http://localhost:5000/api/v1/users
+Content-Type: application/json
+
+{
+  "name": "test1",
+  "email": "test1@example.com",
+  "password": "test12345",
+  "role": "USER"
+}
+
+### Suspend User
+PATCH http://localhost:5000/api/v1/users/6a89788abd66228e876855bf/status
+Content-Type: application/json
+
+{
+  "status": "SUSPENDED"
+}
+
+### Change test1 to MANAGER
+PATCH http://localhost:5000/api/v1/users/6a89788abd66228e876855bf/role
+Content-Type: application/json
+
+{
+  "role": "MANAGER"
+}
+
+### Change test1 to USER
+PATCH http://localhost:5000/api/v1/users/6a89788abd66228e876855bf/role
+Content-Type: application/json
+
+{
+  "role": "USER"
+}
+
+### Role Changes
+GET http://localhost:5000/api/v1/audit-logs?action=ROLE_CHANGED
+
+### USER Activity
+GET http://localhost:5000/api/v1/audit-logs?userId=6a89788abd66228e876855bf
