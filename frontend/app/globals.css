@@ -1,26 +1,142 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/*
+ * Design tokens
+ *
+ * Light mode is the default.
+ * Dark mode follows the user's operating-system preference.
+ *
+ * These are intentionally semantic tokens rather than hard-coded
+ * colors throughout the application.
+ */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root {
+  color-scheme: light;
+
+  --color-background: rgba(255, 255, 255, 1);
+  --color-background-secondary: rgba(242, 242, 247, 1);
+  --color-background-tertiary: rgba(229, 229, 234, 1);
+
+  --color-foreground: rgba(28, 28, 30, 1);
+  --color-foreground-secondary: rgba(142, 142, 147, 1);
+  --color-foreground-tertiary: rgba(174, 174, 178, 1);
+
+  --color-border: rgba(0, 0, 0, 0.08);
+  --color-border-strong: rgba(0, 0, 0, 0.14);
+
+  --color-accent: rgba(0, 136, 255, 1);
+  --color-accent-hover: rgba(0, 145, 255, 0.8);
+
+  --color-overlay: rgba(255, 255, 255, 0.82);
+
+  --selection-background: rgba(28, 28, 30, 1);
+  --selection-foreground: rgba(255, 255, 255, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: dark;
+
+    --color-background: rgba(0, 0, 0, 1);
+    --color-background-secondary: rgba(28, 28, 30, 1);
+    --color-background-tertiary: rgba(58, 58, 60, 1);
+
+    --color-foreground: #f5f5f7;
+    --color-foreground-secondary: rgba(142, 142, 147, 1);
+    --color-foreground-tertiary: rgba(99, 99, 102, 1);
+
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-border-strong: rgba(255, 255, 255, 0.18);
+
+    --color-accent: rgba(0, 145, 255, 1);
+    --color-accent-hover: rgba(0, 145, 255, 0.8);
+
+    --color-overlay: rgba(0, 0, 0, 0.82);
+
+    --selection-background: #f5f5f7;
+    --selection-foreground: rgba(28, 28, 30, 1);
   }
 }
 
+@theme inline {
+  --font-sans: var(--font-inter);
+
+  --color-background: var(--color-background);
+  --color-background-secondary: var(--color-background-secondary);
+  --color-background-tertiary: var(--color-background-tertiary);
+
+  --color-foreground: var(--color-foreground);
+  --color-foreground-secondary: var(--color-foreground-secondary);
+  --color-foreground-tertiary: var(--color-foreground-tertiary);
+
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  scroll-behavior: auto;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  margin: 0;
+  background: var(--color-background);
+  color: var(--color-foreground);
+
+  font-family: var(--font-inter), Inter, system-ui, sans-serif;
+  letter-spacing: -0.025em;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--selection-background);
+  color: var(--selection-foreground);
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+/*
+ * Accessibility / performance:
+ * GSAP will respect this through matchMedia in the animation layer.
+ * We don't globally remove transitions here because that can make
+ * normal UI feel broken.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
