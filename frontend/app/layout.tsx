@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
+import "@material-symbols/font-400";
 import "./globals.css";
 
 const inter = Inter({
@@ -75,7 +76,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetBrainsMono.variable} font-medium tracking-tight`}
+      className={`${inter.variable} ${jetBrainsMono.variable} text-base font-medium tracking-tight`}
     >
       <body>
         <SmoothScroll />
