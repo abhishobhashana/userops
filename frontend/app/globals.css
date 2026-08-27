@@ -13,8 +13,8 @@
 :root {
   color-scheme: light;
 
-  --color-background: rgba(255, 255, 255, 1);
-  --color-background-secondary: rgba(242, 242, 247, 1);
+  --color-background: rgba(242, 242, 247, 1);
+  --color-background-secondary: rgba(255, 255, 255, 1);
   --color-background-tertiary: rgba(229, 229, 234, 1);
 
   --color-foreground: rgba(28, 28, 30, 1);
@@ -29,7 +29,7 @@
 
   --color-overlay: rgba(255, 255, 255, 0.82);
 
-  --selection-background: rgba(28, 28, 30, 1);
+  --selection-background: rgba(0, 145, 255, 0.8);
   --selection-foreground: rgba(255, 255, 255, 1);
 }
 
@@ -53,8 +53,8 @@
 
     --color-overlay: rgba(0, 0, 0, 0.82);
 
-    --selection-background: #f5f5f7;
-    --selection-foreground: rgba(28, 28, 30, 1);
+    --selection-background: rgba(0, 145, 255, 0.8);
+    --selection-foreground: rgba(255, 255, 255, 1);
   }
 }
 
@@ -138,5 +138,19 @@ button {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+}
+
+@theme {
+  --animate-loader-fade: loader-fade 1s linear infinite;
+
+  @keyframes loader-fade {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0.25;
+    }
   }
 }
