@@ -1,33 +1,43 @@
-# Dependencies
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Environment variables
-.env
-.env.*
-!.env.example
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-# Next.js
-.next/
-out/
+# testing
+/coverage
 
-# Backend builds
-dist/
-build/
+# next.js
+/.next/
+/out/
 
-# Logs
-*.log
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
-pnpm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Coverage
-coverage/
+# env files (can opt-in for committing if needed)
+.env
+.env*
+!.env.example
 
-# OS
-.DS_Store
-Thumbs.db
+# vercel
+.vercel
 
-# IDE
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
+# typescript
+*.tsbuildinfo
+next-env.d.ts
