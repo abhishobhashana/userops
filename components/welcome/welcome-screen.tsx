@@ -17,7 +17,7 @@ export function WelcomeScreen() {
     const completed = window.localStorage.getItem(ONBOARDING_KEY) === "true";
 
     if (completed) {
-      router.replace("/login");
+      router.replace("/auth/login");
       return;
     }
 
@@ -40,7 +40,7 @@ export function WelcomeScreen() {
     setIsVisible(false);
 
     window.setTimeout(() => {
-      router.replace("/login");
+      router.replace("/auth/login");
     }, 400);
   };
 
