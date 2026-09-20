@@ -9,7 +9,7 @@ export default async function DashboardPage() {
   const authUser = await getAuthUser();
 
   if (!authUser) {
-    redirect("/login");
+    redirect("/auth/login");
   }
 
   await connectDatabase();
