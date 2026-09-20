@@ -42,7 +42,7 @@ export default function AuthInput({
             "transition-[border-color,box-shadow] duration-200",
             "focus:border-accent",
             "focus:ring-3 focus:ring-accent focus:outline-none!",
-            error ? "border-3 border-red pr-12" : "border-border",
+            error ? "ring-3 ring-red outline-none! pr-12" : "border-border",
             isPassword ? "pr-12" : "",
           ].join(" ")}
         />
@@ -86,7 +86,7 @@ export default function AuthInput({
       )}
 
       {error && (
-        <p id={`${id}-error`} className="text-xs text-red">
+        <p id={`${id}-error`} className="px-3.5 text-xs text-red">
           {error}
         </p>
       )}

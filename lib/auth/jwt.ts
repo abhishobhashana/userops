@@ -1,12 +1,14 @@
 import jwt from "jsonwebtoken";
-import type { AuthUser } from "./types";
+import { USER_ROLES, type AuthUser, type UserRole } from "./types";
 
-interface AccessTokenPayload extends AuthUser {
+interface AccessTokenPayload {
+  userId?: unknown;
+  role?: unknown;
   iat?: number;
   exp?: number;
 }
 
-function getSecret() {
+function getSecret(): string {
   const secret = process.env.JWT_ACCESS_SECRET;
 
   if (!secret) {
@@ -16,14 +18,31 @@ function getSecret() {
   return secret;
 }
 
-export function generateAccessToken(payload: AuthUser) {
-  return jwt.sign(payload, getSecret(), { expiresIn: "1h" });
+function isUserRole(value: unknown): value is UserRole {
+  return typeof value === "string" && USER_ROLES.includes(value as UserRole);
+}
+
+export function generateAccessToken(payload: AuthUser): string {
+  return jwt.sign(
+    {
+      userId: payload.userId,
+      role: payload.role,
+    },
+    getSecret(),
+    {
+      expiresIn: "1h",
+    },
+  );
 }
 
 export function verifyAccessToken(token: string): AuthUser {
   const payload = jwt.verify(token, getSecret()) as AccessTokenPayload;
 
-  if (!payload.userId || !payload.role) {
+  if (
+    typeof payload.userId !== "string" ||
+    !payload.userId ||
+    !isUserRole(payload.role)
+  ) {
     throw new Error("Invalid authentication token");
   }
 

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -8,12 +7,22 @@ import AuthButton from "@/components/auth/auth-button";
 import AuthHeading from "@/components/auth/auth-heading";
 import AuthInput from "@/components/auth/auth-input";
 import AuthShell from "@/components/auth/auth-shell";
+import BackButton from "@/components/ui/back-button";
 
 import { authApi, getApiErrorMessage } from "@/lib/api";
-import BackButton from "../ui/back-button";
 
 function isValidEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isValidPassword(value: string) {
+  return (
+    value.length >= 12 &&
+    value.length <= 128 &&
+    /[0-9]/.test(value) &&
+    /[A-Z]/.test(value) &&
+    /[a-z]/.test(value)
+  );
 }
 
 export default function CreateAccountForm() {
@@ -28,10 +37,10 @@ export default function CreateAccountForm() {
   const [loading, setLoading] = useState(false);
 
   const isValid =
-    firstName.trim().length > 0 &&
-    lastName.trim().length > 0 &&
+    firstName.trim().length >= 2 &&
+    lastName.trim().length >= 2 &&
     isValidEmail(email.trim()) &&
-    password.length >= 12;
+    isValidPassword(password);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,13 +54,13 @@ export default function CreateAccountForm() {
 
     try {
       await authApi.register({
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
         email: email.trim(),
         password,
       });
 
-      router.push("/auth/login");
+      router.replace("/auth/login");
     } catch (error) {
       setError(
         getApiErrorMessage(
@@ -68,7 +77,10 @@ export default function CreateAccountForm() {
     <AuthShell>
       <BackButton href="/auth/login" />
 
-      <AuthHeading title="Create a Free UserOps Account" />
+      <AuthHeading
+        title="Create a Free UserOps Account"
+        description="Create your account to get started with UserOps."
+      />
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

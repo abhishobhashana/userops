@@ -1,40 +1,73 @@
-import { connectDatabase } from "@/lib/db/mongoose";
-import { comparePassword } from "@/lib/auth/password";
-import { generateAccessToken } from "@/lib/auth/jwt";
-import { createAuditLog } from "@/lib/audit";
-import { User } from "@/models/User";
-import { getRequestIp, getUserAgent } from "@/lib/request";
 import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+
+import { comparePassword } from "@/lib/auth/password";
+import { generateAccessToken } from "@/lib/auth/jwt";
+import { generateMfaToken } from "@/lib/auth/mfa-token";
+import { toPublicUser } from "@/lib/auth/user";
+import { createAuditLog } from "@/lib/audit";
+import { connectDatabase } from "@/lib/db/mongoose";
+import { getRequestIp, getUserAgent } from "@/lib/request";
+import { loginSchema } from "@/lib/validation/auth";
+import { User } from "@/models/User";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const COOKIE_NAME = "users_access_token";
+const ACCESS_TOKEN_MAX_AGE = 60 * 60;
 
 export async function POST(request: NextRequest) {
   try {
     await connectDatabase();
 
-    const body = await request.json();
-    const { email, password } = body ?? {};
+    let body: unknown;
 
-    if (
-      typeof email !== "string" ||
-      typeof password !== "string" ||
-      !email ||
-      !password
-    ) {
+    try {
+      body = await request.json();
+    } catch {
       return Response.json(
         {
           success: false,
-          message: "Email and password are required",
+          error: {
+            code: "BAD_REQUEST",
+            message: "Invalid JSON request body",
+          },
         },
         { status: 400 },
       );
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const parsed = loginSchema.safeParse(body);
+
+    if (!parsed.success) {
+      const fields: Record<string, string> = {};
+
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+
+        if (typeof field === "string" && !fields[field]) {
+          fields[field] = issue.message;
+        }
+      }
+
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Please check the highlighted fields",
+            fields,
+          },
+        },
+        { status: 422 },
+      );
+    }
+
+    const { email, password } = parsed.data;
+
+    const normalizedEmail = email.toLowerCase();
+
     const ipAddress = getRequestIp(request);
     const userAgent = getUserAgent(request);
 
@@ -47,14 +80,20 @@ export async function POST(request: NextRequest) {
         action: "LOGIN_FAILED",
         metadata: {
           email: normalizedEmail,
-          reason: "USER_NOT_FOUND",
+          reason: "INVALID_CREDENTIALS",
         },
         ipAddress,
         userAgent,
       });
 
       return Response.json(
-        { success: false, message: "Invalid email or password" },
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Invalid email or password",
+          },
+        },
         { status: 401 },
       );
     }
@@ -64,7 +103,9 @@ export async function POST(request: NextRequest) {
         actorId: user._id.toString(),
         actorRole: user.role,
         action: "LOGIN_FAILED",
-        metadata: { reason: "ACCOUNT_SUSPENDED" },
+        metadata: {
+          reason: "ACCOUNT_SUSPENDED",
+        },
         ipAddress,
         userAgent,
       });
@@ -72,33 +113,99 @@ export async function POST(request: NextRequest) {
       return Response.json(
         {
           success: false,
-          message: "Your account has been suspended",
+          error: {
+            code: "FORBIDDEN",
+            message: "Your account has been suspended",
+          },
         },
         { status: 403 },
       );
     }
 
-    const passwordValid = await comparePassword(
-      password,
-      user.passwordHash,
-    );
+    if (user.status === "INVITED") {
+      await createAuditLog({
+        actorId: user._id.toString(),
+        actorRole: user.role,
+        action: "LOGIN_FAILED",
+        metadata: {
+          reason: "ACCOUNT_NOT_ACTIVATED",
+        },
+        ipAddress,
+        userAgent,
+      });
+
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message: "Your account has not been activated",
+          },
+        },
+        { status: 403 },
+      );
+    }
+
+    const passwordValid = await comparePassword(password, user.passwordHash);
 
     if (!passwordValid) {
       await createAuditLog({
         actorId: user._id.toString(),
         actorRole: user.role,
         action: "LOGIN_FAILED",
-        metadata: { reason: "INVALID_PASSWORD" },
+        metadata: {
+          reason: "INVALID_PASSWORD",
+        },
         ipAddress,
         userAgent,
       });
 
       return Response.json(
-        { success: false, message: "Invalid email or password" },
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Invalid email or password",
+          },
+        },
         { status: 401 },
       );
     }
 
+    /*
+     * MFA is enabled.
+     *
+     * Do not issue the normal access token yet.
+     * The client must complete TOTP verification first.
+     */
+    if (user.mfa?.enabled && user.mfa.type === "TOTP") {
+      const mfaToken = generateMfaToken(user._id.toString());
+
+      await createAuditLog({
+        actorId: user._id.toString(),
+        actorRole: user.role,
+        action: "LOGIN_MFA_REQUIRED",
+        metadata: {
+          mfaType: "TOTP",
+        },
+        ipAddress,
+        userAgent,
+      });
+
+      return Response.json({
+        success: true,
+        message: "MFA verification required",
+        data: {
+          requiresMfa: true,
+          mfaToken,
+        },
+      });
+    }
+
+    /*
+     * No MFA configured.
+     * Complete authentication and issue the access cookie.
+     */
     const accessToken = generateAccessToken({
       userId: user._id.toString(),
       role: user.role,
@@ -108,11 +215,12 @@ export async function POST(request: NextRequest) {
     await user.save();
 
     const cookieStore = await cookies();
+
     cookieStore.set(COOKIE_NAME, accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
-      maxAge: 60 * 60,
+      maxAge: ACCESS_TOKEN_MAX_AGE,
       path: "/",
     });
 
@@ -128,21 +236,21 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Login successful",
       data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          status: user.status,
-          lastLoginAt: user.lastLoginAt,
-        },
+        requiresMfa: false,
+        user: toPublicUser(user),
       },
     });
   } catch (error) {
     console.error("Login error:", error);
 
     return Response.json(
-      { success: false, message: "Internal server error" },
+      {
+        success: false,
+        error: {
+          code: "SERVER_ERROR",
+          message: "Unable to complete login",
+        },
+      },
       { status: 500 },
     );
   }

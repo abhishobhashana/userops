@@ -9,32 +9,42 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   try {
     const auth = await requireApiRole(["SUPER_ADMIN", "ADMIN"]);
-    if (auth.error) return auth.error;
+
+    if (auth.error) {
+      return auth.error;
+    }
 
     await connectDatabase();
 
     const url = new URL(request.url);
+
     const page = Math.max(Number(url.searchParams.get("page")) || 1, 1);
+
     const limit = Math.min(
       Math.max(Number(url.searchParams.get("limit")) || 20, 1),
       100,
     );
 
-    const action = url.searchParams.get("action") as
-      | AuditAction
-      | null;
+    const actionParam = url.searchParams.get("action");
     const userId = url.searchParams.get("userId");
 
     const filter: Record<string, unknown> = {};
 
-    if (action) {
-      if (!AUDIT_ACTIONS.includes(action)) {
+    if (actionParam) {
+      if (!AUDIT_ACTIONS.includes(actionParam as AuditAction)) {
         return Response.json(
-          { success: false, message: "Invalid audit action" },
+          {
+            success: false,
+            error: {
+              code: "INVALID_AUDIT_ACTION",
+              message: "Invalid audit action",
+            },
+          },
           { status: 400 },
         );
       }
-      filter.action = action;
+
+      filter.action = actionParam;
     }
 
     if (userId) {
@@ -45,12 +55,13 @@ export async function GET(request: Request) {
 
     const [logs, total] = await Promise.all([
       AuditLog.find(filter)
-        .populate("actorId", "name email role")
-        .populate("targetUserId", "name email role")
+        .populate("actorId", "first_name last_name email role")
+        .populate("targetUserId", "first_name last_name email role")
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
+
       AuditLog.countDocuments(filter),
     ]);
 
@@ -72,7 +83,13 @@ export async function GET(request: Request) {
     console.error("Get audit logs error:", error);
 
     return Response.json(
-      { success: false, message: "Internal server error" },
+      {
+        success: false,
+        error: {
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Internal server error",
+        },
+      },
       { status: 500 },
     );
   }

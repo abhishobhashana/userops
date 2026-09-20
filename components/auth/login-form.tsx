@@ -8,11 +8,13 @@ import AuthButton from "@/components/auth/auth-button";
 import AuthHeading from "@/components/auth/auth-heading";
 import AuthInput from "@/components/auth/auth-input";
 import AuthShell from "@/components/auth/auth-shell";
+import { useAuth } from "@/components/auth/auth-provider";
 
 import { authApi, getApiErrorMessage } from "@/lib/api";
 
 export default function LoginForm() {
   const router = useRouter();
+  const { setMfaToken, refreshUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -39,9 +41,16 @@ export default function LoginForm() {
       });
 
       if (response.requiresMfa) {
+        if (!response.mfaToken) {
+          throw new Error("MFA verification token was not provided");
+        }
+
+        setMfaToken(response.mfaToken);
         router.push("/auth/mfa");
         return;
       }
+
+      await refreshUser();
 
       router.push("/dashboard");
       router.refresh();
@@ -78,7 +87,7 @@ export default function LoginForm() {
           name="password"
           label="Password"
           type="password"
-          autoComplete="password"
+          autoComplete="current-password"
           placeholder="Password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
