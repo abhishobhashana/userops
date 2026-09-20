@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import "@material-symbols/font-400";
 import "./globals.css";
+import { AuthProvider } from "@/components/auth/auth-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,7 +81,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body>
         <SmoothScroll />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

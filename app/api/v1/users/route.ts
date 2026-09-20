@@ -1,43 +1,69 @@
 import { NextRequest } from "next/server";
+
 import { connectDatabase } from "@/lib/db/mongoose";
 import { requireApiRole } from "@/lib/api-auth";
 import { canManageRole } from "@/lib/auth/permissions";
 import { hashPassword } from "@/lib/auth/password";
+import { toPublicUser } from "@/lib/auth/user";
 import type { UserRole } from "@/lib/auth/types";
 import { createAuditLog } from "@/lib/audit";
 import { getRequestIp, getUserAgent } from "@/lib/request";
+import { createAccountSchema } from "@/lib/validation/auth";
 import { User } from "@/models/User";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MANAGEMENT_ROLES: UserRole[] = [
-  "SUPER_ADMIN",
-  "ADMIN",
-  "MANAGER",
-];
+const MANAGEMENT_ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN", "MANAGER"];
+
+const CREATE_USER_ROLES: UserRole[] = ["ADMIN", "MANAGER", "USER"];
+
+function getValidationFields(
+  issues: Array<{
+    path: PropertyKey[];
+    message: string;
+  }>,
+): Record<string, string> {
+  const fields: Record<string, string> = {};
+
+  for (const issue of issues) {
+    const field = issue.path[0];
+
+    if (typeof field === "string" && !fields[field]) {
+      fields[field] = issue.message;
+    }
+  }
+
+  return fields;
+}
 
 export async function GET() {
   try {
     const auth = await requireApiRole(MANAGEMENT_ROLES);
-    if (auth.error) return auth.error;
+
+    if (auth.error) {
+      return auth.error;
+    }
 
     await connectDatabase();
 
     const users = await User.find()
-      .select("-passwordHash")
+      .select("-passwordHash -mfa.secretEncrypted")
       .sort({ createdAt: -1 })
       .lean();
 
     return Response.json({
       success: true,
-      data: users,
+      data: users.map(toPublicUser),
     });
   } catch (error) {
     console.error("Get users error:", error);
 
     return Response.json(
-      { success: false, message: "Internal server error" },
+      {
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 },
     );
   }
@@ -46,52 +72,58 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const auth = await requireApiRole(["SUPER_ADMIN", "ADMIN"]);
-    if (auth.error) return auth.error;
+
+    if (auth.error) {
+      return auth.error;
+    }
 
     await connectDatabase();
 
     const body = await request.json();
-    const { name, email, password, role = "USER" } = body ?? {};
+
+    /*
+     * User creation uses the same core account
+     * validation as public registration.
+     */
+    const result = createAccountSchema.safeParse(body);
+
+    if (!result.success) {
+      const fields = getValidationFields(result.error.issues);
+
+      return Response.json(
+        {
+          success: false,
+          message: "Please correct the highlighted fields",
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Please correct the highlighted fields",
+            fields,
+          },
+        },
+        { status: 422 },
+      );
+    }
+
+    const { first_name, last_name, email, password } = result.data;
+
+    const role = body?.role;
 
     if (
-      typeof name !== "string" ||
-      typeof email !== "string" ||
-      typeof password !== "string" ||
-      !name ||
-      !email ||
-      !password
+      typeof role !== "string" ||
+      !CREATE_USER_ROLES.includes(role as UserRole)
     ) {
       return Response.json(
         {
           success: false,
-          message: "Name, email and password are required",
+          message: "Invalid user role",
         },
         { status: 400 },
       );
     }
 
-    if (password.length < 8) {
-      return Response.json(
-        {
-          success: false,
-          message: "Password must be at least 8 characters",
-        },
-        { status: 400 },
-      );
-    }
+    const requestedRole = role as UserRole;
 
-    const normalizedName = name.trim();
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const allowedRoles: UserRole[] = ["ADMIN", "MANAGER", "USER"];
-    if (!allowedRoles.includes(role as UserRole)) {
-      return Response.json(
-        { success: false, message: "Invalid user role" },
-        { status: 400 },
-      );
-    }
-
-    if (!canManageRole(auth.user.role, role as UserRole)) {
+    if (!canManageRole(auth.user.role, requestedRole)) {
       return Response.json(
         {
           success: false,
@@ -100,6 +132,12 @@ export async function POST(request: NextRequest) {
         { status: 403 },
       );
     }
+
+    const normalizedFirstName = first_name.trim();
+
+    const normalizedLastName = last_name.trim();
+
+    const normalizedEmail = email.trim().toLowerCase();
 
     const existingUser = await User.findOne({
       email: normalizedEmail,
@@ -115,12 +153,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const passwordHash = await hashPassword(password);
+
     const user = await User.create({
-      name: normalizedName,
+      first_name: normalizedFirstName,
+      last_name: normalizedLastName,
       email: normalizedEmail,
-      passwordHash: await hashPassword(password),
-      role: role as UserRole,
+      passwordHash,
+      role: requestedRole,
       status: "ACTIVE",
+
+      mfa: {
+        enabled: false,
+        type: null,
+      },
     });
 
     await createAuditLog({
@@ -128,7 +174,9 @@ export async function POST(request: NextRequest) {
       actorRole: auth.user.role,
       action: "USER_CREATED",
       targetUserId: user._id.toString(),
-      metadata: { role: user.role },
+      metadata: {
+        role: user.role,
+      },
       ipAddress: getRequestIp(request),
       userAgent: getUserAgent(request),
     });
@@ -138,12 +186,7 @@ export async function POST(request: NextRequest) {
         success: true,
         message: "User created successfully",
         data: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          status: user.status,
-          createdAt: user.createdAt,
+          user: toPublicUser(user),
         },
       },
       { status: 201 },
@@ -152,7 +195,10 @@ export async function POST(request: NextRequest) {
     console.error("Create user error:", error);
 
     return Response.json(
-      { success: false, message: "Internal server error" },
+      {
+        success: false,
+        message: "Internal server error",
+      },
       { status: 500 },
     );
   }

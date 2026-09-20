@@ -7,6 +7,10 @@ export const AUDIT_ACTIONS = [
   "USER_SUSPENDED",
   "USER_ACTIVATED",
   "ROLE_CHANGED",
+  "LOGIN_MFA_REQUIRED",
+  "MFA_SETUP_STARTED",
+  "MFA_ENABLED",
+  "MFA_DISABLED",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

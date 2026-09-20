@@ -1,24 +1,26 @@
 import { api } from "./client";
-
-export interface AuthUser {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role: string;
-}
+import type { PublicUser } from "@/lib/auth/types";
 
 export interface LoginResponse {
-  user: AuthUser;
-  requiresMfa?: boolean;
+  user?: PublicUser;
+  requiresMfa: boolean;
+  mfaToken?: string;
 }
 
 export interface RegisterResponse {
-  user: AuthUser;
+  user: PublicUser;
 }
 
 export interface MeResponse {
-  user: AuthUser;
+  user: PublicUser;
+}
+
+export interface LogoutResponse {
+  message: string;
+}
+
+export interface MfaVerifyResponse {
+  user: PublicUser;
 }
 
 export const authApi = {
@@ -27,8 +29,8 @@ export const authApi = {
   },
 
   register(input: {
-    firstName: string;
-    lastName: string;
+    first_name: string;
+    last_name: string;
     email: string;
     password: string;
   }) {
@@ -36,10 +38,14 @@ export const authApi = {
   },
 
   logout() {
-    return api.post<void>("/api/v1/auth/logout");
+    return api.post<LogoutResponse>("/api/v1/auth/logout");
   },
 
   me() {
     return api.get<MeResponse>("/api/v1/auth/me");
+  },
+
+  verifyMfa(input: { mfaToken: string; code: string }) {
+    return api.post<MfaVerifyResponse>("/api/v1/auth/mfa/verify", input);
   },
 };

@@ -6,9 +6,10 @@ export interface ApiSuccess<T> {
 
 export interface ApiFailure {
   success: false;
-  error: {
-    code: string;
-    message: string;
+  message?: string;
+  error?: {
+    code?: string;
+    message?: string;
     fields?: Record<string, string>;
   };
 }

@@ -1,11 +1,11 @@
 import { ApiError, type ApiErrorCode } from "./errors";
+import type { ApiResponse, ApiSuccess } from "./types";
 
-type RequestOptions = Omit<RequestInit, "body"> & {
-  body?: unknown;
+const API_TIMEOUT = 15_000;
+
+interface RequestOptions extends RequestInit {
   timeout?: number;
-};
-
-const DEFAULT_TIMEOUT = 15_000;
+}
 
 function getErrorCode(status: number): ApiErrorCode {
   switch (status) {
@@ -39,64 +39,148 @@ function getErrorCode(status: number): ApiErrorCode {
   }
 }
 
-async function parseResponse<T>(response: Response): Promise<T> {
-  const contentType = response.headers.get("content-type");
-  const isJson = contentType?.includes("application/json");
-
-  const body = isJson ? await response.json().catch(() => null) : null;
-
-  if (!response.ok) {
-    const error = body?.error;
-
-    throw new ApiError(
-      error?.message ?? `Request failed with status ${response.status}.`,
-      {
-        status: response.status,
-        code: error?.code ?? getErrorCode(response.status),
-        fields: error?.fields,
-      },
-    );
+function getNetworkErrorCode(error: unknown): ApiErrorCode {
+  if (error instanceof DOMException && error.name === "AbortError") {
+    return "TIMEOUT";
   }
 
-  /*
-   * All UserOps APIs should eventually use:
-   *
-   * {
-   *   success: true,
-   *   data: ...
-   * }
-   */
+  if (error instanceof TypeError) {
+    return "NETWORK_ERROR";
+  }
 
-  if (body && typeof body === "object" && "success" in body) {
-    if (!body.success) {
-      throw new ApiError(body.error?.message ?? "Something went wrong.", {
-        status: response.status,
-        code: body.error?.code ?? "UNKNOWN_ERROR",
-        fields: body.error?.fields,
-      });
+  return "UNKNOWN_ERROR";
+}
+
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  try {
+    const text = await response.text();
+
+    if (!text) {
+      return null;
     }
 
-    return body.data;
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+  } catch {
+    return null;
+  }
+}
+
+function getErrorMessage(body: unknown, status: number): string {
+  if (typeof body === "object" && body !== null) {
+    const responseBody = body as {
+      message?: unknown;
+      error?: {
+        message?: unknown;
+      };
+    };
+
+    if (responseBody.error && typeof responseBody.error.message === "string") {
+      return responseBody.error.message;
+    }
+
+    if (typeof responseBody.message === "string") {
+      return responseBody.message;
+    }
   }
 
-  /*
-   * Keep this fallback temporarily so the client
-   * can coexist with existing endpoints while we
-   * migrate them to the unified response contract.
-   */
-  return body;
+  if (typeof body === "string" && body.trim()) {
+    return body;
+  }
+
+  return `Request failed with status ${status}.`;
+}
+
+function getErrorFields(body: unknown): Record<string, string> | undefined {
+  if (typeof body !== "object" || body === null) {
+    return undefined;
+  }
+
+  const responseBody = body as {
+    error?: {
+      fields?: unknown;
+    };
+  };
+
+  if (
+    typeof responseBody.error?.fields === "object" &&
+    responseBody.error.fields !== null
+  ) {
+    return responseBody.error.fields as Record<string, string>;
+  }
+
+  return undefined;
+}
+
+function getErrorCodeFromBody(body: unknown, status: number): ApiErrorCode {
+  if (typeof body === "object" && body !== null) {
+    const responseBody = body as {
+      error?: {
+        code?: unknown;
+      };
+    };
+
+    const code = responseBody.error?.code;
+
+    if (
+      typeof code === "string" &&
+      [
+        "BAD_REQUEST",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "NOT_FOUND",
+        "CONFLICT",
+        "VALIDATION_ERROR",
+        "RATE_LIMITED",
+        "SERVER_ERROR",
+        "NETWORK_ERROR",
+        "TIMEOUT",
+        "UNKNOWN_ERROR",
+      ].includes(code)
+    ) {
+      return code as ApiErrorCode;
+    }
+  }
+
+  return getErrorCode(status);
+}
+
+function isApiSuccess<T>(body: unknown): body is ApiSuccess<T> {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "success" in body &&
+    (body as { success?: unknown }).success === true
+  );
+}
+
+function isApiFailure(body: unknown): boolean {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    "success" in body &&
+    (body as { success?: unknown }).success === false
+  );
 }
 
 export async function apiClient<T>(
-  url: string,
+  path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const {
-    body,
-    timeout = DEFAULT_TIMEOUT,
-    headers,
-    ...requestOptions
-  } = options;
+  const { timeout = API_TIMEOUT, headers, body, ...fetchOptions } = options;
 
   const controller = new AbortController();
 
@@ -104,88 +188,173 @@ export async function apiClient<T>(
     controller.abort();
   }, timeout);
 
+  const requestHeaders = new Headers(headers);
+
+  if (
+    body &&
+    !(body instanceof FormData) &&
+    !requestHeaders.has("Content-Type")
+  ) {
+    requestHeaders.set("Content-Type", "application/json");
+  }
+
+  let requestBody = body;
+
+  if (
+    body &&
+    typeof body !== "string" &&
+    !(body instanceof FormData) &&
+    !(body instanceof Blob) &&
+    !(body instanceof ArrayBuffer)
+  ) {
+    requestBody = JSON.stringify(body);
+  }
+
   try {
-    const response = await fetch(url, {
-      ...requestOptions,
-
+    const response = await fetch(path, {
+      ...fetchOptions,
+      headers: requestHeaders,
+      body: requestBody,
       credentials: "include",
-
-      headers: {
-        Accept: "application/json",
-
-        ...(body !== undefined
-          ? {
-              "Content-Type": "application/json",
-            }
-          : {}),
-
-        ...headers,
-      },
-
-      body: body !== undefined ? JSON.stringify(body) : undefined,
-
       signal: controller.signal,
     });
 
-    return await parseResponse<T>(response);
+    const responseBody = await parseResponseBody(response);
+
+    if (!response.ok) {
+      throw new ApiError(getErrorMessage(responseBody, response.status), {
+        status: response.status,
+        code: getErrorCodeFromBody(responseBody, response.status),
+        fields: getErrorFields(responseBody),
+      });
+    }
+
+    /*
+     * Empty responses are valid for endpoints such as
+     * logout where there may be no response body.
+     */
+    if (responseBody === null) {
+      return undefined as T;
+    }
+
+    /*
+     * Preferred API contract:
+     *
+     * {
+     *   success: true,
+     *   data: ...
+     * }
+     */
+    if (isApiSuccess<T>(responseBody)) {
+      return responseBody.data;
+    }
+
+    /*
+     * Handle the API's failure envelope even if the
+     * HTTP status happens to be successful.
+     */
+    if (isApiFailure(responseBody)) {
+      throw new ApiError(getErrorMessage(responseBody, response.status), {
+        status: response.status,
+        code: getErrorCodeFromBody(responseBody, response.status),
+        fields: getErrorFields(responseBody),
+      });
+    }
+
+    /*
+     * Migration compatibility:
+     *
+     * Some existing endpoints may still return their
+     * payload directly instead of:
+     *
+     * {
+     *   success: true,
+     *   data: ...
+     * }
+     *
+     * Keep this fallback while the backend is being
+     * standardized.
+     */
+    return responseBody as T;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
 
-    if (error instanceof DOMException && error.name === "AbortError") {
-      throw new ApiError("The request took too long. Please try again.", {
+    const code = getNetworkErrorCode(error);
+
+    if (code === "TIMEOUT") {
+      throw new ApiError("The request timed out. Please try again.", {
+        status: 408,
         code: "TIMEOUT",
-        status: 0,
       });
     }
 
-    throw new ApiError(
-      "Unable to connect to UserOps. Please check your connection and try again.",
-      {
-        code: "NETWORK_ERROR",
-        status: 0,
-      },
-    );
+    if (code === "NETWORK_ERROR") {
+      throw new ApiError(
+        "Unable to connect to the server. Please check your connection and try again.",
+        {
+          status: 0,
+          code: "NETWORK_ERROR",
+        },
+      );
+    }
+
+    throw new ApiError("Something went wrong. Please try again.", {
+      status: 0,
+      code: "UNKNOWN_ERROR",
+    });
   } finally {
     window.clearTimeout(timeoutId);
   }
 }
 
 export const api = {
-  get<T>(url: string, options?: RequestOptions) {
-    return apiClient<T>(url, {
+  get<T>(path: string, options: RequestOptions = {}) {
+    return apiClient<T>(path, {
       ...options,
       method: "GET",
     });
   },
 
-  post<T>(url: string, body?: unknown, options?: RequestOptions) {
-    return apiClient<T>(url, {
+  post<T>(path: string, body?: unknown, options: RequestOptions = {}) {
+    return apiClient<T>(path, {
       ...options,
       method: "POST",
-      body,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
     });
   },
 
-  put<T>(url: string, body?: unknown, options?: RequestOptions) {
-    return apiClient<T>(url, {
+  put<T>(path: string, body?: unknown, options: RequestOptions = {}) {
+    return apiClient<T>(path, {
       ...options,
       method: "PUT",
-      body,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
     });
   },
 
-  patch<T>(url: string, body?: unknown, options?: RequestOptions) {
-    return apiClient<T>(url, {
+  patch<T>(path: string, body?: unknown, options: RequestOptions = {}) {
+    return apiClient<T>(path, {
       ...options,
       method: "PATCH",
-      body,
+      body: body === undefined ? undefined : JSON.stringify(body),
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
     });
   },
 
-  delete<T>(url: string, options?: RequestOptions) {
-    return apiClient<T>(url, {
+  delete<T>(path: string, options: RequestOptions = {}) {
+    return apiClient<T>(path, {
       ...options,
       method: "DELETE",
     });

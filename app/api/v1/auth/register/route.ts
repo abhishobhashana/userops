@@ -1,5 +1,9 @@
-import { connectDatabase } from "@/lib/db/mongoose";
+import { NextRequest } from "next/server";
+
 import { hashPassword } from "@/lib/auth/password";
+import { createAuditLog } from "@/lib/audit";
+import { connectDatabase } from "@/lib/db/mongoose";
+import { getRequestIp, getUserAgent } from "@/lib/request";
 import { toPublicUser } from "@/lib/auth/user";
 import { createAccountSchema } from "@/lib/validation/auth";
 import { User } from "@/models/User";
@@ -7,36 +11,33 @@ import { User } from "@/models/User";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     await connectDatabase();
 
-    /*
-     * Bootstrap is only allowed while there is no
-     * SUPER_ADMIN in the database.
-     */
-    const existingSuperAdmin = await User.exists({
-      role: "SUPER_ADMIN",
-    });
+    let body: unknown;
 
-    if (existingSuperAdmin) {
+    try {
+      body = await request.json();
+    } catch {
       return Response.json(
         {
           success: false,
-          message: "Super Admin has already been initialized",
+          error: {
+            code: "BAD_REQUEST",
+            message: "Invalid JSON request body",
+          },
         },
-        { status: 403 },
+        { status: 400 },
       );
     }
 
-    const body = await request.json();
+    const parsed = createAccountSchema.safeParse(body);
 
-    const result = createAccountSchema.safeParse(body);
-
-    if (!result.success) {
+    if (!parsed.success) {
       const fields: Record<string, string> = {};
 
-      for (const issue of result.error.issues) {
+      for (const issue of parsed.error.issues) {
         const field = issue.path[0];
 
         if (typeof field === "string" && !fields[field]) {
@@ -47,10 +48,9 @@ export async function POST(request: Request) {
       return Response.json(
         {
           success: false,
-          message: "Please correct the highlighted fields",
           error: {
             code: "VALIDATION_ERROR",
-            message: "Please correct the highlighted fields",
+            message: "Please check the highlighted fields",
             fields,
           },
         },
@@ -58,15 +58,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const { first_name, last_name, email, password } = result.data;
+    const { first_name, last_name, email, password } = parsed.data;
 
-    const normalizedFirstName = first_name.trim();
+    const normalizedEmail = email.toLowerCase();
 
-    const normalizedLastName = last_name.trim();
-
-    const normalizedEmail = email.trim().toLowerCase();
-
-    const existingUser = await User.findOne({
+    const existingUser = await User.exists({
       email: normalizedEmail,
     });
 
@@ -74,7 +70,10 @@ export async function POST(request: Request) {
       return Response.json(
         {
           success: false,
-          message: "A user with this email already exists",
+          error: {
+            code: "CONFLICT",
+            message: "An account with this email already exists",
+          },
         },
         { status: 409 },
       );
@@ -83,29 +82,33 @@ export async function POST(request: Request) {
     const passwordHash = await hashPassword(password);
 
     const user = await User.create({
-      first_name: normalizedFirstName,
-      last_name: normalizedLastName,
+      first_name,
+      last_name,
       email: normalizedEmail,
       passwordHash,
-      role: "SUPER_ADMIN",
+      role: "USER",
       status: "ACTIVE",
-
-      /*
-       * Explicitly initialize MFA.
-       *
-       * This means every newly created user has a
-       * predictable MFA state.
-       */
       mfa: {
         enabled: false,
         type: null,
       },
     });
 
+    await createAuditLog({
+      actorId: user._id.toString(),
+      actorRole: user.role,
+      action: "USER_CREATED",
+      metadata: {
+        source: "PUBLIC_REGISTRATION",
+      },
+      ipAddress: getRequestIp(request),
+      userAgent: getUserAgent(request),
+    });
+
     return Response.json(
       {
         success: true,
-        message: "Super Admin created successfully",
+        message: "Account created successfully",
         data: {
           user: toPublicUser(user),
         },
@@ -113,12 +116,15 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error) {
-    console.error("Bootstrap Super Admin error:", error);
+    console.error("Registration error:", error);
 
     return Response.json(
       {
         success: false,
-        message: "Internal server error",
+        error: {
+          code: "SERVER_ERROR",
+          message: "Unable to create your account",
+        },
       },
       { status: 500 },
     );

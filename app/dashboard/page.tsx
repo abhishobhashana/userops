@@ -1,14 +1,14 @@
 import { redirect } from "next/navigation";
-import { getAuthUser } from "@/lib/auth/session";
+import { getCurrentUser } from "@/lib/auth/require-user";
 import { connectDatabase } from "@/lib/db/mongoose";
 import { User } from "@/models/User";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const authUser = await getAuthUser();
+  const user = await getCurrentUser();
 
-  if (!authUser) {
+  if (!user) {
     redirect("/auth/login");
   }
 
@@ -29,7 +29,7 @@ export default async function DashboardPage() {
             Operations overview
           </h1>
           <p className="mt-2 text-foreground-secondary">
-            {authUser.role} access · live from MongoDB
+            {user.role} access · live from MongoDB
           </p>
         </header>
 

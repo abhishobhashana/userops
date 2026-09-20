@@ -12,8 +12,8 @@ export const emailSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(8, {
-    error: "Password must be at least 8 characters",
+  .min(12, {
+    error: "Password must be at least 12 characters",
   })
   .max(128, {
     error: "Password must be 128 characters or fewer",
@@ -30,35 +30,40 @@ export const passwordSchema = z
 
 export const loginSchema = z.object({
   email: emailSchema,
+
   password: z.string().min(1, {
     error: "Password is required",
   }),
 });
 
 export const createAccountSchema = z.object({
-  firstName: z
+  first_name: z
     .string()
     .trim()
-    .min(1, {
-      error: "First name is required",
+    .min(2, {
+      error: "First name must be at least 2 characters",
     })
-    .max(50, {
-      error: "First name is too long",
+    .max(80, {
+      error: "First name must be 80 characters or fewer",
     }),
 
-  lastName: z
+  last_name: z
     .string()
     .trim()
-    .min(1, {
-      error: "Last name is required",
+    .min(2, {
+      error: "Last name must be at least 2 characters",
     })
-    .max(50, {
-      error: "Last name is too long",
+    .max(80, {
+      error: "Last name must be 80 characters or fewer",
     }),
 
   email: emailSchema,
 
   password: passwordSchema,
+});
+
+export const forgotPasswordSchema = z.object({
+  email: emailSchema,
 });
 
 export const resetPasswordSchema = z
@@ -74,6 +79,21 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const mfaCodeSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, {
+      error: "Enter the 6-digit verification code",
+    }),
+});
+
+export type MfaCodeInput = z.infer<typeof mfaCodeSchema>;
+
 export type LoginInput = z.infer<typeof loginSchema>;
+
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
+
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
