@@ -1,14 +1,26 @@
 import { connectDatabase } from "@/lib/db/mongoose";
 import { hashPassword } from "@/lib/auth/password";
 import { toPublicUser } from "@/lib/auth/user";
-import { createAccountSchema } from "@/lib/validation/auth";
+import { createAccountSchema } from "@/lib/validation";
 import { User } from "@/models/User";
+import { getRateLimitKey, rateLimit } from "@/lib/api/rate-limit";
+import { rateLimitResponse } from "@/lib/api/rate-limit-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
+    const rateLimitResult = rateLimit({
+      key: getRateLimitKey(request, "auth-bootstrap"),
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult);
+    }
+
     await connectDatabase();
 
     /*
@@ -89,17 +101,6 @@ export async function POST(request: Request) {
       passwordHash,
       role: "SUPER_ADMIN",
       status: "ACTIVE",
-
-      /*
-       * Explicitly initialize MFA.
-       *
-       * This means every newly created user has a
-       * predictable MFA state.
-       */
-      mfa: {
-        enabled: false,
-        type: null,
-      },
     });
 
     return Response.json(

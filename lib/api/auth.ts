@@ -1,14 +1,14 @@
-import { api } from "./client";
 import type { PublicUser } from "@/lib/auth/types";
 
+import { api } from "./client";
+
 export interface LoginResponse {
-  user?: PublicUser;
-  requiresMfa: boolean;
-  mfaToken?: string;
+  user: PublicUser;
 }
 
 export interface RegisterResponse {
   user: PublicUser;
+  recoveryCode: string;
 }
 
 export interface MeResponse {
@@ -19,8 +19,12 @@ export interface LogoutResponse {
   message: string;
 }
 
-export interface MfaVerifyResponse {
-  user: PublicUser;
+export interface VerifyRecoveryCodeResponse {
+  resetToken: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
 }
 
 export const authApi = {
@@ -45,7 +49,21 @@ export const authApi = {
     return api.get<MeResponse>("/api/v1/auth/me");
   },
 
-  verifyMfa(input: { mfaToken: string; code: string }) {
-    return api.post<MfaVerifyResponse>("/api/v1/auth/mfa/verify", input);
+  verifyRecoveryCode(input: { recoveryCode: string }) {
+    return api.post<VerifyRecoveryCodeResponse>(
+      "/api/v1/auth/forgot-password",
+      input,
+    );
+  },
+
+  resetPassword(input: {
+    resetToken: string;
+    password: string;
+    confirmPassword: string;
+  }) {
+    return api.post<ResetPasswordResponse>(
+      "/api/v1/auth/reset-password",
+      input,
+    );
   },
 };

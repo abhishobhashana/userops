@@ -1,5 +1,5 @@
 import { ApiError, type ApiErrorCode } from "./errors";
-import type { ApiResponse, ApiSuccess } from "./types";
+import type { ApiSuccess } from "./types";
 
 const API_TIMEOUT = 15_000;
 
@@ -11,71 +11,20 @@ function getErrorCode(status: number): ApiErrorCode {
   switch (status) {
     case 400:
       return "BAD_REQUEST";
-
     case 401:
       return "UNAUTHORIZED";
-
     case 403:
       return "FORBIDDEN";
-
     case 404:
       return "NOT_FOUND";
-
     case 409:
       return "CONFLICT";
-
     case 422:
       return "VALIDATION_ERROR";
-
     case 429:
       return "RATE_LIMITED";
-
     default:
-      if (status >= 500) {
-        return "SERVER_ERROR";
-      }
-
-      return "UNKNOWN_ERROR";
-  }
-}
-
-function getNetworkErrorCode(error: unknown): ApiErrorCode {
-  if (error instanceof DOMException && error.name === "AbortError") {
-    return "TIMEOUT";
-  }
-
-  if (error instanceof TypeError) {
-    return "NETWORK_ERROR";
-  }
-
-  return "UNKNOWN_ERROR";
-}
-
-async function parseResponseBody(response: Response): Promise<unknown> {
-  const contentType = response.headers.get("content-type") ?? "";
-
-  if (contentType.includes("application/json")) {
-    try {
-      return await response.json();
-    } catch {
-      return null;
-    }
-  }
-
-  try {
-    const text = await response.text();
-
-    if (!text) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch {
-      return text;
-    }
-  } catch {
-    return null;
+      return status >= 500 ? "SERVER_ERROR" : "UNKNOWN_ERROR";
   }
 }
 
@@ -88,7 +37,7 @@ function getErrorMessage(body: unknown, status: number): string {
       };
     };
 
-    if (responseBody.error && typeof responseBody.error.message === "string") {
+    if (typeof responseBody.error?.message === "string") {
       return responseBody.error.message;
     }
 
@@ -176,17 +125,74 @@ function isApiFailure(body: unknown): boolean {
   );
 }
 
+async function parseResponseBody(response: Response): Promise<unknown> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    try {
+      return await response.json();
+    } catch {
+      return null;
+    }
+  }
+
+  try {
+    const text = await response.text();
+
+    if (!text) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      return text;
+    }
+  } catch {
+    return null;
+  }
+}
+
 export async function apiClient<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { timeout = API_TIMEOUT, headers, body, ...fetchOptions } = options;
+  const {
+    timeout = API_TIMEOUT,
+    signal: externalSignal,
+    headers,
+    body,
+    ...fetchOptions
+  } = options;
 
   const controller = new AbortController();
 
-  const timeoutId = window.setTimeout(() => {
+  let timedOut = false;
+
+  const timeoutId = setTimeout(() => {
+    timedOut = true;
     controller.abort();
   }, timeout);
+
+  let removeExternalListener: (() => void) | undefined;
+
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      controller.abort();
+    } else {
+      const handleAbort = () => {
+        controller.abort();
+      };
+
+      externalSignal.addEventListener("abort", handleAbort, {
+        once: true,
+      });
+
+      removeExternalListener = () => {
+        externalSignal.removeEventListener("abort", handleAbort);
+      };
+    }
+  }
 
   const requestHeaders = new Headers(headers);
 
@@ -229,30 +235,14 @@ export async function apiClient<T>(
       });
     }
 
-    /*
-     * Empty responses are valid for endpoints such as
-     * logout where there may be no response body.
-     */
     if (responseBody === null) {
       return undefined as T;
     }
 
-    /*
-     * Preferred API contract:
-     *
-     * {
-     *   success: true,
-     *   data: ...
-     * }
-     */
     if (isApiSuccess<T>(responseBody)) {
       return responseBody.data;
     }
 
-    /*
-     * Handle the API's failure envelope even if the
-     * HTTP status happens to be successful.
-     */
     if (isApiFailure(responseBody)) {
       throw new ApiError(getErrorMessage(responseBody, response.status), {
         status: response.status,
@@ -261,36 +251,27 @@ export async function apiClient<T>(
       });
     }
 
-    /*
-     * Migration compatibility:
-     *
-     * Some existing endpoints may still return their
-     * payload directly instead of:
-     *
-     * {
-     *   success: true,
-     *   data: ...
-     * }
-     *
-     * Keep this fallback while the backend is being
-     * standardized.
-     */
     return responseBody as T;
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
 
-    const code = getNetworkErrorCode(error);
-
-    if (code === "TIMEOUT") {
+    if (timedOut) {
       throw new ApiError("The request timed out. Please try again.", {
         status: 408,
         code: "TIMEOUT",
       });
     }
 
-    if (code === "NETWORK_ERROR") {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw new ApiError("The request was cancelled.", {
+        status: 499,
+        code: "NETWORK_ERROR",
+      });
+    }
+
+    if (error instanceof TypeError) {
       throw new ApiError(
         "Unable to connect to the server. Please check your connection and try again.",
         {
@@ -305,7 +286,8 @@ export async function apiClient<T>(
       code: "UNKNOWN_ERROR",
     });
   } finally {
-    window.clearTimeout(timeoutId);
+    clearTimeout(timeoutId);
+    removeExternalListener?.();
   }
 }
 

@@ -8,7 +8,7 @@ import { toPublicUser } from "@/lib/auth/user";
 import type { UserRole } from "@/lib/auth/types";
 import { createAuditLog } from "@/lib/audit";
 import { getRequestIp, getUserAgent } from "@/lib/request";
-import { createAccountSchema } from "@/lib/validation/auth";
+import { createAccountSchema } from "@/lib/validation";
 import { User } from "@/models/User";
 
 export const runtime = "nodejs";
@@ -162,11 +162,6 @@ export async function POST(request: NextRequest) {
       passwordHash,
       role: requestedRole,
       status: "ACTIVE",
-
-      mfa: {
-        enabled: false,
-        type: null,
-      },
     });
 
     await createAuditLog({

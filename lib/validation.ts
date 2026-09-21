@@ -12,8 +12,8 @@ export const emailSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(12, {
-    error: "Password must be at least 12 characters",
+  .min(8, {
+    error: "Password must be at least 8 characters",
   })
   .max(128, {
     error: "Password must be 128 characters or fewer",
@@ -58,16 +58,21 @@ export const createAccountSchema = z.object({
     }),
 
   email: emailSchema,
-
   password: passwordSchema,
 });
 
-export const forgotPasswordSchema = z.object({
-  email: emailSchema,
+export const recoveryCodeSchema = z.object({
+  recoveryCode: z.string().trim().min(1, {
+    error: "Recovery code is required",
+  }),
 });
 
 export const resetPasswordSchema = z
   .object({
+    resetToken: z.string().trim().min(1, {
+      error: "Reset token is required",
+    }),
+
     password: passwordSchema,
 
     confirmPassword: z.string().min(1, {
@@ -79,21 +84,7 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-export const mfaCodeSchema = z.object({
-  code: z
-    .string()
-    .trim()
-    .regex(/^\d{6}$/, {
-      error: "Enter the 6-digit verification code",
-    }),
-});
-
-export type MfaCodeInput = z.infer<typeof mfaCodeSchema>;
-
 export type LoginInput = z.infer<typeof loginSchema>;
-
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
-
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-
+export type RecoveryCodeInput = z.infer<typeof recoveryCodeSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

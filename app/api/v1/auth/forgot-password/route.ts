@@ -1,13 +1,14 @@
 import { NextRequest } from "next/server";
 
-import { hashPassword } from "@/lib/auth/password";
-import { createAuditLog } from "@/lib/audit";
+import {
+  generateResetToken,
+  hashRecoveryCode,
+  hashResetToken,
+  getResetTokenExpiry,
+} from "@/lib/auth/recovery";
 import { connectDatabase } from "@/lib/db/mongoose";
-import { getRequestIp, getUserAgent } from "@/lib/request";
-import { toPublicUser } from "@/lib/auth/user";
-import { createAccountSchema } from "@/lib/validation";
+import { recoveryCodeSchema } from "@/lib/validation";
 import { User } from "@/models/User";
-import { generateRecoveryCode, hashRecoveryCode } from "@/lib/auth/recovery";
 import { getRateLimitKey, rateLimit } from "@/lib/api/rate-limit";
 import { rateLimitResponse } from "@/lib/api/rate-limit-response";
 
@@ -17,7 +18,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const rateLimitResult = rateLimit({
-      key: getRateLimitKey(request, "auth-register"),
+      key: getRateLimitKey(request, "auth-forgot-password"),
       limit: 5,
       windowMs: 15 * 60 * 1000,
     });
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsed = createAccountSchema.safeParse(body);
+    const parsed = recoveryCodeSchema.safeParse(body);
 
     if (!parsed.success) {
       const fields: Record<string, string> = {};
@@ -71,73 +72,63 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { first_name, last_name, email, password } = parsed.data;
+    const recoveryCodeHash = hashRecoveryCode(parsed.data.recoveryCode);
 
-    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({
+      recoveryCodeHash,
+    }).select("+recoveryCodeHash");
 
-    const existingUser = await User.exists({
-      email: normalizedEmail,
-    });
-
-    if (existingUser) {
+    if (!user) {
       return Response.json(
         {
           success: false,
           error: {
-            code: "CONFLICT",
-            message: "An account with this email already exists",
+            code: "UNAUTHORIZED",
+            message: "Invalid recovery code",
           },
         },
-        { status: 409 },
+        { status: 401 },
       );
     }
 
-    const passwordHash = await hashPassword(password);
-
-    const recoveryCode = generateRecoveryCode();
-    const recoveryCodeHash = hashRecoveryCode(recoveryCode);
-
-    const user = await User.create({
-      first_name,
-      last_name,
-      email: normalizedEmail,
-      passwordHash,
-      recoveryCodeHash,
-      role: "USER",
-      status: "ACTIVE",
-    });
-
-    await createAuditLog({
-      actorId: user._id.toString(),
-      actorRole: user.role,
-      action: "USER_CREATED",
-      metadata: {
-        source: "PUBLIC_REGISTRATION",
-      },
-      ipAddress: getRequestIp(request),
-      userAgent: getUserAgent(request),
-    });
-
-    return Response.json(
-      {
-        success: true,
-        message: "Account created successfully",
-        data: {
-          user: toPublicUser(user),
-          recoveryCode,
+    if (user.status === "SUSPENDED") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message: "Your account has been suspended",
+          },
         },
+        { status: 403 },
+      );
+    }
+
+    const resetToken = generateResetToken();
+    const resetTokenHash = hashResetToken(resetToken);
+    const resetTokenExpiresAt = getResetTokenExpiry();
+
+    user.resetTokenHash = resetTokenHash;
+    user.resetTokenExpiresAt = resetTokenExpiresAt;
+
+    await user.save();
+
+    return Response.json({
+      success: true,
+      message: "Recovery code verified",
+      data: {
+        resetToken,
       },
-      { status: 201 },
-    );
+    });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Recovery code verification error:", error);
 
     return Response.json(
       {
         success: false,
         error: {
           code: "SERVER_ERROR",
-          message: "Unable to create your account",
+          message: "Unable to verify recovery code",
         },
       },
       { status: 500 },

@@ -4,6 +4,7 @@ import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import "@material-symbols/font-400";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { ToastProvider } from "@/components/ui/toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -80,8 +81,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${inter.variable} ${jetBrainsMono.variable} text-base font-medium tracking-tight`}
     >
       <body>
-        <SmoothScroll />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <SmoothScroll />
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

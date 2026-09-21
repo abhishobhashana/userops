@@ -22,7 +22,6 @@ export interface AuthUser {
  *
  * Never include:
  * - passwordHash
- * - MFA secret
  * - other authentication secrets
  */
 export interface PublicUser {
