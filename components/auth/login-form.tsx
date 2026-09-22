@@ -33,7 +33,10 @@ export default function LoginForm() {
 
   const [loading, setLoading] = useState(false);
 
-  const isValid = email.trim().length > 0 && password.length > 0;
+  const isValid = loginSchema.safeParse({
+    email: email.trim(),
+    password,
+  }).success;
 
   function validateField(field: LoginField, value: string) {
     const result = loginSchema.shape[field].safeParse(
@@ -102,7 +105,7 @@ export default function LoginForm() {
 
       await refreshUser();
 
-      router.push("/dashboard");
+      router.push("/analytics");
       router.refresh();
     } catch (error) {
       const fields = getApiFieldErrors(error);
@@ -172,7 +175,7 @@ export default function LoginForm() {
 
           <Link
             href="/auth/create-account"
-            className="flex items-center justify-between rounded-b-2xl px-3.5 py-2.5"
+            className="flex items-center justify-between rounded-b-2xl px-3.5 py-2.5 transition-colors focus:bg-background-tertiary"
           >
             Create a Free UserOps Account
             <span className="material-symbols-rounded text-xs! text-foreground-tertiary">

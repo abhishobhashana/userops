@@ -33,6 +33,7 @@ interface AuthProviderProps {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<PublicUser | null>(null);
+
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   const refreshUser = useCallback(async () => {

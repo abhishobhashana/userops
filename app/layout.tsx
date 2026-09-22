@@ -78,7 +78,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jetBrainsMono.variable} text-base font-medium tracking-tight`}
+      className={`${inter.variable} ${jetBrainsMono.variable} text-base tracking-tight`}
     >
       <body>
         <AuthProvider>

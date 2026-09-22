@@ -35,6 +35,16 @@ export default function ForgotPasswordForm() {
 
   const recoveryStep = !resetToken;
 
+  const isRecoveryCodeValid = recoveryCodeSchema.safeParse({
+    recoveryCode: recoveryCode.trim(),
+  }).success;
+
+  const isResetPasswordValid = resetPasswordSchema.safeParse({
+    resetToken,
+    password,
+    confirmPassword,
+  }).success;
+
   function validateRecoveryCode(value: string) {
     const result = recoveryCodeSchema.safeParse({
       recoveryCode: value.trim(),
@@ -240,7 +250,7 @@ export default function ForgotPasswordForm() {
           <AuthButton
             type="submit"
             loading={loading}
-            disabled={!recoveryCode.trim()}
+            disabled={!isRecoveryCodeValid}
             className="mt-6"
           >
             Continue
@@ -286,7 +296,7 @@ export default function ForgotPasswordForm() {
           <AuthButton
             type="submit"
             loading={loading}
-            disabled={password.length === 0 || confirmPassword.length === 0}
+            disabled={!isResetPasswordValid}
             className="mt-6"
           >
             Reset Password

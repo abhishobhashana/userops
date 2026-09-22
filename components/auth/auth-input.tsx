@@ -36,9 +36,9 @@ export default function AuthInput({
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
-            "w-full rounded-xl bg-background-tertiary px-3.5 py-2",
+            "w-full rounded-xl bg-background-secondary px-3.5 py-2",
             "text-foreground outline-none",
-            "placeholder:text-foreground-secondary",
+            "placeholder:text-foreground-tertiary",
             "transition-[border-color,box-shadow] duration-200",
             "focus:border-accent",
             "focus:ring-3 focus:ring-accent focus:outline-none!",
@@ -51,7 +51,7 @@ export default function AuthInput({
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center text-foreground"
+            className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center text-foreground-tertiary"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             <span

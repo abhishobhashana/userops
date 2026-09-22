@@ -164,6 +164,33 @@ export default function CreateAccountForm() {
   }
 
   if (accountCreated) {
+    function downloadRecoveryCode() {
+      const content = [
+        "UserOps Recovery Code",
+        "",
+        `Recovery Code: ${recoveryCode}`,
+        "",
+        "Keep this code somewhere safe.",
+        "You will need it to reset your UserOps password.",
+      ].join("\n");
+
+      const blob = new Blob([content], {
+        type: "text/plain;charset=utf-8",
+      });
+
+      const url = URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "userops-recovery-code.txt";
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      URL.revokeObjectURL(url);
+    }
+
     return (
       <AuthShell>
         <AuthHeading
@@ -184,9 +211,26 @@ export default function CreateAccountForm() {
           recovery code.
         </p>
 
-        <AuthButton type="button" onClick={() => router.replace("/auth/login")}>
-          Continue to Login
-        </AuthButton>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <AuthButton
+            type="button"
+            onClick={downloadRecoveryCode}
+            className="flex-1"
+          >
+            <span className="material-symbols-rounded text-base!">
+              download
+            </span>
+            Download Recovery Code
+          </AuthButton>
+
+          <AuthButton
+            type="button"
+            onClick={() => router.replace("/auth/login")}
+            className="flex-1"
+          >
+            Continue to Login
+          </AuthButton>
+        </div>
       </AuthShell>
     );
   }
