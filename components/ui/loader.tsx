@@ -13,7 +13,7 @@ const sizeClasses: Record<LoaderSize, string> = {
   lg: "size-10",
 };
 
-export function Loader({ size = "md", className = "" }: LoaderProps) {
+export default function Loader({ size = "md", className = "" }: LoaderProps) {
   return (
     <div
       role="status"

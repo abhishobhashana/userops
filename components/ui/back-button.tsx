@@ -16,16 +16,14 @@ export default function BackButton({
       aria-label={label}
       className={[
         "flex w-fit items-center justify-center",
-        "rounded-full bg-background-secondary",
-        "p-3 pr-2.5",
-        "shadow-lg",
         "transform-gpu touch-manipulation transition-transform duration-200 ease-out",
-        "active:scale-90",
+        "active:opacity-85",
       ].join(" ")}
     >
-      <span className="material-symbols-rounded text-[16px]! pl-1">
+      <span className="material-symbols-rounded text-[16px]! pl-1 text-accent">
         arrow_back_ios
       </span>
+      <span className="text-accent">Back</span>
     </Link>
   );
 }

@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import AuthButton from "@/components/auth/auth-button";
 import AuthHeading from "@/components/auth/auth-heading";
-import AuthInput from "@/components/auth/auth-input";
 import AuthShell from "@/components/auth/auth-shell";
+
+import Textfield from "@/components/ui/textfield";
 import BackButton from "@/components/ui/back-button";
+import Button from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 import { authApi, getApiErrorMessage, getApiFieldErrors } from "@/lib/api";
@@ -212,7 +213,7 @@ export default function CreateAccountForm() {
         </p>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <AuthButton
+          <Button
             type="button"
             onClick={downloadRecoveryCode}
             className="flex-1"
@@ -221,15 +222,15 @@ export default function CreateAccountForm() {
               download
             </span>
             Download Recovery Code
-          </AuthButton>
+          </Button>
 
-          <AuthButton
+          <Button
             type="button"
             onClick={() => router.replace("/auth/login")}
             className="flex-1"
           >
             Continue to Login
-          </AuthButton>
+          </Button>
         </div>
       </AuthShell>
     );
@@ -243,7 +244,7 @@ export default function CreateAccountForm() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-          <AuthInput
+          <Textfield
             id="firstName"
             name="firstName"
             label="First Name"
@@ -254,7 +255,7 @@ export default function CreateAccountForm() {
             error={fieldErrors.first_name}
           />
 
-          <AuthInput
+          <Textfield
             id="lastName"
             name="lastName"
             label="Last Name"
@@ -266,7 +267,7 @@ export default function CreateAccountForm() {
           />
         </div>
 
-        <AuthInput
+        <Textfield
           id="email"
           name="email"
           label="Email Address"
@@ -279,7 +280,7 @@ export default function CreateAccountForm() {
           error={fieldErrors.email}
         />
 
-        <AuthInput
+        <Textfield
           id="password"
           name="password"
           label="Password"
@@ -292,14 +293,14 @@ export default function CreateAccountForm() {
           error={fieldErrors.password}
         />
 
-        <AuthButton
+        <Button
           type="submit"
           loading={loading}
           disabled={!isValid}
           className="mt-6"
         >
           Continue
-        </AuthButton>
+        </Button>
       </form>
     </AuthShell>
   );

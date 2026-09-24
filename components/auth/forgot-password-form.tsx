@@ -3,11 +3,12 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import AuthButton from "@/components/auth/auth-button";
 import AuthHeading from "@/components/auth/auth-heading";
-import AuthInput from "@/components/auth/auth-input";
 import AuthShell from "@/components/auth/auth-shell";
+
+import Textfield from "@/components/ui/textfield";
 import BackButton from "@/components/ui/back-button";
+import Button from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 import { authApi, getApiErrorMessage, getApiFieldErrors } from "@/lib/api";
@@ -230,7 +231,7 @@ export default function ForgotPasswordForm() {
 
       {recoveryStep ? (
         <form onSubmit={handleRecoverySubmit} className="flex flex-col gap-4">
-          <AuthInput
+          <Textfield
             id="recoveryCode"
             name="recoveryCode"
             label="Recovery Code"
@@ -247,18 +248,18 @@ export default function ForgotPasswordForm() {
             error={fieldErrors.recoveryCode}
           />
 
-          <AuthButton
+          <Button
             type="submit"
             loading={loading}
             disabled={!isRecoveryCodeValid}
             className="mt-6"
           >
             Continue
-          </AuthButton>
+          </Button>
         </form>
       ) : (
         <form onSubmit={handleResetSubmit} className="flex flex-col gap-4">
-          <AuthInput
+          <Textfield
             id="password"
             name="password"
             label="New Password"
@@ -276,7 +277,7 @@ export default function ForgotPasswordForm() {
             error={fieldErrors.password}
           />
 
-          <AuthInput
+          <Textfield
             id="confirmPassword"
             name="confirmPassword"
             label="Confirm Password"
@@ -293,14 +294,14 @@ export default function ForgotPasswordForm() {
             error={fieldErrors.confirmPassword}
           />
 
-          <AuthButton
+          <Button
             type="submit"
             loading={loading}
             disabled={!isResetPasswordValid}
             className="mt-6"
           >
             Reset Password
-          </AuthButton>
+          </Button>
         </form>
       )}
     </AuthShell>

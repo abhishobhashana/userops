@@ -2,20 +2,20 @@
 
 import { useState } from "react";
 
-interface AuthInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface TextfieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   info?: string;
   error?: string;
 }
 
-export default function AuthInput({
+export default function Textfield({
   label,
   info,
   error,
   type = "text",
   id,
   ...props
-}: AuthInputProps) {
+}: TextfieldProps) {
   const [showPassword, setShowPassword] = useState(false);
 
   const isPassword = type === "password";
@@ -36,7 +36,7 @@ export default function AuthInput({
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
-            "w-full rounded-xl bg-background-secondary px-3.5 py-2",
+            "w-full rounded-xl bg-background-secondary px-3.5 py-2.5",
             "text-foreground outline-none",
             "placeholder:text-foreground-tertiary",
             "transition-[border-color,box-shadow] duration-200",
