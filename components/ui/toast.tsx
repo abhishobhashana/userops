@@ -118,12 +118,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 "toast-item",
                 toast.closing ? "toast-item-exit" : "",
                 "pointer-events-auto relative overflow-hidden",
-                "rounded-2xl border border-border/70",
-                "bg-background-secondary/90",
-                "px-4 py-3",
-                "shadow-[0_18px_50px_rgba(0,0,0,0.14)]",
-                "backdrop-blur-2xl",
-                "supports-backdrop-filter:bg-background-secondary/75",
+                "rounded-2xl border-2 border-border",
+                "bg-background-secondary/20",
+                "p-2.5",
+                "shadow-md",
+                "backdrop-blur-xl",
+                "supports-backdrop-filter:bg-background-secondary/20",
               ].join(" ")}
             >
               <div className="flex items-center gap-3">
@@ -137,7 +137,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   {toast.type === "success" ? "check_circle" : "error"}
                 </span>
 
-                <p className="min-w-0 flex-1 text-sm leading-5 text-foreground">
+                <p className="min-w-0 flex-1 font-medium text-foreground">
                   {toast.message}
                 </p>
 
@@ -145,7 +145,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   type="button"
                   aria-label="Dismiss notification"
                   onClick={() => removeToast(toast.id)}
-                  className="material-symbols-rounded shrink-0 text-[18px] text-foreground-tertiary transition-colors duration-200 hover:text-foreground"
+                  className="material-symbols-rounded cursor-pointer shrink-0 text-foreground-tertiary transition-colors duration-200 hover:text-foreground"
                 >
                   close
                 </button>

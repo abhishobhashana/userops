@@ -4,11 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import AuthButton from "@/components/auth/auth-button";
-import AuthHeading from "@/components/auth/auth-heading";
-import AuthInput from "@/components/auth/auth-input";
-import AuthShell from "@/components/auth/auth-shell";
 import { useAuth } from "@/components/auth/auth-provider";
+import AuthHeading from "@/components/auth/auth-heading";
+import AuthShell from "@/components/auth/auth-shell";
+
+import Textfield from "@/components/ui/textfield";
+import Button from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 import { authApi, getApiErrorMessage, getApiFieldErrors } from "@/lib/api";
@@ -135,7 +136,7 @@ export default function LoginForm() {
       />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <AuthInput
+        <Textfield
           id="email"
           name="email"
           label="Email"
@@ -147,7 +148,7 @@ export default function LoginForm() {
           error={fieldErrors.email}
         />
 
-        <AuthInput
+        <Textfield
           id="password"
           name="password"
           label="Password"
@@ -184,9 +185,9 @@ export default function LoginForm() {
           </Link>
         </div>
 
-        <AuthButton type="submit" loading={loading} disabled={!isValid}>
+        <Button type="submit" loading={loading} disabled={!isValid}>
           Continue
-        </AuthButton>
+        </Button>
       </form>
     </AuthShell>
   );
