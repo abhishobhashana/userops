@@ -13,56 +13,106 @@
 :root {
   color-scheme: light;
 
-  --color-background: rgba(242, 242, 247, 1);
-  --color-background-secondary: rgba(255, 255, 255, 1);
-  --color-background-tertiary: rgba(229, 229, 234, 1);
+  /* System colors */
+  --color-white: rgba(255, 255, 255, 1);
+  --color-black: rgba(0, 0, 0, 1);
 
+  --color-red: rgba(255, 56, 60, 1);
+  --color-orange: rgba(255, 149, 0, 1);
+  --color-yellow: rgba(255, 204, 1, 1);
+  --color-green: rgba(52, 199, 89, 1);
+  --color-mint: rgba(0, 199, 190, 1);
+  --color-teal: rgba(48, 176, 199, 1);
+  --color-cyan: rgba(50, 173, 230, 1);
+  --color-blue: rgba(0, 122, 255, 1);
+  --color-indigo: rgba(88, 86, 214, 1);
+  --color-purple: rgba(175, 82, 222, 1);
+  --color-pink: rgba(255, 45, 85, 1);
+
+  /* Grays */
+  --color-gray: rgba(142, 142, 147, 1);
+  --color-gray2: rgba(174, 174, 178, 1);
+  --color-gray3: rgba(199, 199, 204, 1);
+  --color-gray4: rgba(209, 209, 214, 1);
+  --color-gray5: rgba(229, 229, 234, 1);
+  --color-gray6: rgba(242, 242, 247, 1);
+
+  /* Backgrounds */
+  --color-background: var(--color-white);
+  --color-background-secondary: var(--color-gray6);
+  --color-background-tertiary: var(--color-gray5);
+
+  /* Foregrounds */
   --color-foreground: rgba(28, 28, 30, 1);
-  --color-foreground-secondary: rgba(142, 142, 147, 1);
-  --color-foreground-tertiary: rgba(174, 174, 178, 1);
+  --color-foreground-secondary: var(--color-gray);
+  --color-foreground-tertiary: var(--color-gray2);
 
-  --color-border: rgba(0, 0, 0, 0.08);
-  --color-border-strong: rgba(0, 0, 0, 0.14);
+  /* Borders */
+  --color-border: var(--color-gray4);
 
-  --color-accent: rgba(0, 136, 255, 1);
-  --color-accent-hover: rgba(0, 145, 255, 0.8);
+  /* Accent */
+  --color-accent: var(--color-blue);
+  --color-accent-hover: rgba(0, 112, 235, 1);
 
+  /* Overlay */
   --color-overlay: rgba(255, 255, 255, 0.82);
 
-  --selection-background: rgba(0, 145, 255, 0.8);
-  --selection-foreground: rgba(255, 255, 255, 1);
-
-  --color-red: rgb(255, 56, 60);
-  --color-yellow: rgb(255, 204, 0);
-  --color-green: rgb(52, 199, 89);
+  /* Selection */
+  --selection-background: rgba(0, 122, 255, 0.24);
+  --selection-foreground: rgba(28, 28, 30, 1);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
     color-scheme: dark;
 
-    --color-background: rgba(0, 0, 0, 1);
-    --color-background-secondary: rgba(28, 28, 30, 1);
-    --color-background-tertiary: rgba(58, 58, 60, 1);
+    /* System colors */
+    --color-white: rgba(255, 255, 255, 1);
+    --color-black: rgba(0, 0, 0, 1);
 
-    --color-foreground: rgba(255, 255, 255, 1);
-    --color-foreground-secondary: rgba(142, 142, 147, 1);
-    --color-foreground-tertiary: rgba(99, 99, 102, 1);
+    --color-red: rgba(255, 69, 69, 1);
+    --color-orange: rgba(255, 159, 10, 1);
+    --color-yellow: rgba(255, 214, 0, 1);
+    --color-green: rgba(48, 209, 88, 1);
+    --color-mint: rgba(99, 230, 226, 1);
+    --color-teal: rgba(64, 200, 224, 1);
+    --color-cyan: rgba(100, 210, 255, 1);
+    --color-blue: rgba(10, 132, 255, 1);
+    --color-indigo: rgba(94, 92, 230, 1);
+    --color-purple: rgba(191, 90, 242, 1);
+    --color-pink: rgba(255, 55, 95, 1);
 
-    --color-border: rgba(255, 255, 255, 0.1);
-    --color-border-strong: rgba(255, 255, 255, 0.18);
+    /* Grays */
+    --color-gray: rgba(142, 142, 147, 1);
+    --color-gray2: rgba(99, 99, 102, 1);
+    --color-gray3: rgba(72, 72, 74, 1);
+    --color-gray4: rgba(58, 58, 60, 1);
+    --color-gray5: rgba(44, 44, 46, 1);
+    --color-gray6: rgba(28, 28, 30, 1);
 
-    --color-accent: rgba(0, 145, 255, 1);
-    --color-accent-hover: rgba(0, 145, 255, 0.8);
+    /* Backgrounds */
+    --color-background: var(--color-black);
+    --color-background-secondary: var(--color-gray6);
+    --color-background-tertiary: var(--color-gray5);
 
+    /* Foregrounds */
+    --color-foreground: var(--color-white);
+    --color-foreground-secondary: var(--color-gray);
+    --color-foreground-tertiary: var(--color-gray2);
+
+    /* Borders */
+    --color-border: var(--color-gray4);
+
+    /* Accent */
+    --color-accent: var(--color-blue);
+    --color-accent-hover: rgba(32, 145, 255, 1);
+
+    /* Overlay */
     --color-overlay: rgba(0, 0, 0, 0.82);
 
-    --selection-background: rgba(0, 145, 255, 0.8);
-    --selection-foreground: rgba(255, 255, 255, 1);
-
-    --color-red: rgb(255, 66, 69);
-    --color-yellow: rgb(255, 214, 0);
-    --color-green: rgb(48, 209, 88);
+    /* Selection */
+    --selection-background: rgba(10, 132, 255, 0.32);
+    --selection-foreground: var(--color-white);
   }
 }
 
@@ -78,7 +128,6 @@
   --color-foreground-tertiary: var(--color-foreground-tertiary);
 
   --color-border: var(--color-border);
-  --color-border-strong: var(--color-border-strong);
 
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);

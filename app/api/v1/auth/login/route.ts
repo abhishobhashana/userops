@@ -3,13 +3,14 @@ import { cookies } from "next/headers";
 
 import { comparePassword } from "@/lib/auth/password";
 import { generateAccessToken } from "@/lib/auth/jwt";
-import { generateMfaToken } from "@/lib/auth/mfa-token";
 import { toPublicUser } from "@/lib/auth/user";
 import { createAuditLog } from "@/lib/audit";
 import { connectDatabase } from "@/lib/db/mongoose";
 import { getRequestIp, getUserAgent } from "@/lib/request";
-import { loginSchema } from "@/lib/validation/auth";
+import { loginSchema } from "@/lib/validation";
 import { User } from "@/models/User";
+import { getRateLimitKey, rateLimit } from "@/lib/api/rate-limit";
+import { rateLimitResponse } from "@/lib/api/rate-limit-response";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,6 +20,16 @@ const ACCESS_TOKEN_MAX_AGE = 60 * 60;
 
 export async function POST(request: NextRequest) {
   try {
+    const rateLimitResult = rateLimit({
+      key: getRateLimitKey(request, "auth-login"),
+      limit: 5,
+      windowMs: 15 * 60 * 1000,
+    });
+
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult);
+    }
+
     await connectDatabase();
 
     let body: unknown;
@@ -172,40 +183,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    /*
-     * MFA is enabled.
-     *
-     * Do not issue the normal access token yet.
-     * The client must complete TOTP verification first.
-     */
-    if (user.mfa?.enabled && user.mfa.type === "TOTP") {
-      const mfaToken = generateMfaToken(user._id.toString());
-
-      await createAuditLog({
-        actorId: user._id.toString(),
-        actorRole: user.role,
-        action: "LOGIN_MFA_REQUIRED",
-        metadata: {
-          mfaType: "TOTP",
-        },
-        ipAddress,
-        userAgent,
-      });
-
-      return Response.json({
-        success: true,
-        message: "MFA verification required",
-        data: {
-          requiresMfa: true,
-          mfaToken,
-        },
-      });
-    }
-
-    /*
-     * No MFA configured.
-     * Complete authentication and issue the access cookie.
-     */
     const accessToken = generateAccessToken({
       userId: user._id.toString(),
       role: user.role,
@@ -236,7 +213,6 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Login successful",
       data: {
-        requiresMfa: false,
         user: toPublicUser(user),
       },
     });

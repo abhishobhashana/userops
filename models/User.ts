@@ -1,20 +1,15 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
 import type { UserRole, UserStatus } from "@/lib/auth/types";
 
-export type MfaType = "TOTP";
-
-export interface IUserMfa {
-  enabled: boolean;
-  type: MfaType | null;
-  secretEncrypted?: string;
-  setupSecretEncrypted?: string;
-}
-
 export interface IUser extends Document {
   first_name: string;
   last_name: string;
   email: string;
   passwordHash: string;
+
+  recoveryCodeHash: string;
+  resetTokenHash?: string;
+  resetTokenExpiresAt?: Date;
 
   role: UserRole;
   status: UserStatus;
@@ -22,36 +17,9 @@ export interface IUser extends Document {
   avatar?: string;
   lastLoginAt?: Date;
 
-  mfa: IUserMfa;
-
   createdAt: Date;
   updatedAt: Date;
 }
-
-const mfaSchema = new Schema<IUserMfa>(
-  {
-    enabled: {
-      type: Boolean,
-      default: false,
-    },
-    type: {
-      type: String,
-      enum: ["TOTP"],
-      default: null,
-    },
-    secretEncrypted: {
-      type: String,
-      select: false,
-    },
-    setupSecretEncrypted: {
-      type: String,
-      select: false,
-    },
-  },
-  {
-    _id: false,
-  },
-);
 
 const userSchema = new Schema<IUser>(
   {
@@ -86,6 +54,24 @@ const userSchema = new Schema<IUser>(
       select: false,
     },
 
+    recoveryCodeHash: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+      select: false,
+    },
+
+    resetTokenHash: {
+      type: String,
+      select: false,
+    },
+
+    resetTokenExpiresAt: {
+      type: Date,
+      select: false,
+    },
+
     role: {
       type: String,
       enum: ["SUPER_ADMIN", "ADMIN", "MANAGER", "USER"],
@@ -107,14 +93,6 @@ const userSchema = new Schema<IUser>(
 
     lastLoginAt: {
       type: Date,
-    },
-
-    mfa: {
-      type: mfaSchema,
-      default: () => ({
-        enabled: false,
-        type: null,
-      }),
     },
   },
 

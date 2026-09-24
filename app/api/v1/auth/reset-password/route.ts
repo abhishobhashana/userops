@@ -1,13 +1,12 @@
 import { NextRequest } from "next/server";
 
 import { hashPassword } from "@/lib/auth/password";
+import { hashResetToken } from "@/lib/auth/recovery";
 import { createAuditLog } from "@/lib/audit";
 import { connectDatabase } from "@/lib/db/mongoose";
 import { getRequestIp, getUserAgent } from "@/lib/request";
-import { toPublicUser } from "@/lib/auth/user";
-import { createAccountSchema } from "@/lib/validation";
+import { resetPasswordSchema } from "@/lib/validation";
 import { User } from "@/models/User";
-import { generateRecoveryCode, hashRecoveryCode } from "@/lib/auth/recovery";
 import { getRateLimitKey, rateLimit } from "@/lib/api/rate-limit";
 import { rateLimitResponse } from "@/lib/api/rate-limit-response";
 
@@ -17,7 +16,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     const rateLimitResult = rateLimit({
-      key: getRateLimitKey(request, "auth-register"),
+      key: getRateLimitKey(request, "auth-reset-password"),
       limit: 5,
       windowMs: 15 * 60 * 1000,
     });
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const parsed = createAccountSchema.safeParse(body);
+    const parsed = resetPasswordSchema.safeParse(body);
 
     if (!parsed.success) {
       const fields: Record<string, string> = {};
@@ -71,73 +70,98 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { first_name, last_name, email, password } = parsed.data;
+    const { resetToken, password } = parsed.data;
 
-    const normalizedEmail = email.toLowerCase();
+    const resetTokenHash = hashResetToken(resetToken);
 
-    const existingUser = await User.exists({
-      email: normalizedEmail,
-    });
+    const user = await User.findOne({
+      resetTokenHash,
+    }).select("+resetTokenHash +resetTokenExpiresAt");
 
-    if (existingUser) {
+    if (!user) {
       return Response.json(
         {
           success: false,
           error: {
-            code: "CONFLICT",
-            message: "An account with this email already exists",
+            code: "UNAUTHORIZED",
+            message: "Invalid or expired reset session",
           },
         },
-        { status: 409 },
+        { status: 401 },
+      );
+    }
+
+    if (
+      !user.resetTokenExpiresAt ||
+      user.resetTokenExpiresAt.getTime() <= Date.now()
+    ) {
+      user.resetTokenHash = undefined;
+      user.resetTokenExpiresAt = undefined;
+
+      await user.save();
+
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "UNAUTHORIZED",
+            message: "Your reset session has expired",
+          },
+        },
+        { status: 401 },
+      );
+    }
+
+    if (user.status === "SUSPENDED") {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "FORBIDDEN",
+            message: "Your account has been suspended",
+          },
+        },
+        { status: 403 },
       );
     }
 
     const passwordHash = await hashPassword(password);
 
-    const recoveryCode = generateRecoveryCode();
-    const recoveryCodeHash = hashRecoveryCode(recoveryCode);
+    user.passwordHash = passwordHash;
 
-    const user = await User.create({
-      first_name,
-      last_name,
-      email: normalizedEmail,
-      passwordHash,
-      recoveryCodeHash,
-      role: "USER",
-      status: "ACTIVE",
-    });
+    // The reset token is single-use.
+    user.resetTokenHash = undefined;
+    user.resetTokenExpiresAt = undefined;
+
+    await user.save();
 
     await createAuditLog({
       actorId: user._id.toString(),
       actorRole: user.role,
-      action: "USER_CREATED",
+      action: "PASSWORD_RESET",
       metadata: {
-        source: "PUBLIC_REGISTRATION",
+        source: "RECOVERY_CODE",
       },
       ipAddress: getRequestIp(request),
       userAgent: getUserAgent(request),
     });
 
-    return Response.json(
-      {
-        success: true,
-        message: "Account created successfully",
-        data: {
-          user: toPublicUser(user),
-          recoveryCode,
-        },
+    return Response.json({
+      success: true,
+      message: "Password reset successfully",
+      data: {
+        message: "Your password has been reset successfully",
       },
-      { status: 201 },
-    );
+    });
   } catch (error) {
-    console.error("Registration error:", error);
+    console.error("Password reset error:", error);
 
     return Response.json(
       {
         success: false,
         error: {
           code: "SERVER_ERROR",
-          message: "Unable to create your account",
+          message: "Unable to reset your password",
         },
       },
       { status: 500 },
