@@ -50,7 +50,7 @@ export default function Button({
             </span>
           ) : null}
 
-          <span>{children}</span>
+          <span className="font-medium">{children}</span>
 
           {endIcon ? (
             <span

@@ -132,6 +132,8 @@
   --color-accent: var(--color-accent);
   --color-accent-hover: var(--color-accent-hover);
 
+  --color-white: var(--color-white);
+  --color-black: var(--color-black);
   --color-red: var(--color-red);
   --color-yellow: var(--color-yellow);
   --color-green: var(--color-green);
