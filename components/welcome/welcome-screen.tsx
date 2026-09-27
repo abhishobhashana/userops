@@ -54,11 +54,11 @@ export function WelcomeScreen() {
       } motion-reduce:transition-none`}
     >
       <section
-        className={`relative z-10 w-full overflow-hidden bg-background-secondary transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-lg md:rounded-[42px] lg:max-w-lg lg:rounded-[42px] ${
+        className={`fixed z-10 w-full overflow-hidden bg-background-secondary transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-lg md:rounded-[42px] lg:max-w-lg lg:rounded-[42px] ${
           isVisible
             ? "translate-y-0 scale-100 opacity-100"
             : "translate-y-4 scale-[0.96] opacity-0"
-        } max-sm:max-h-[calc(100dvh-24px)] max-sm:min-h-[calc(100dvh-24px)] max-sm:rounded-b-none max-sm:rounded-t-4xl ${
+        } max-sm:bottom-0 max-sm:max-h-[calc(100dvh-24px)] max-sm:min-h-[calc(100dvh-24px)] max-sm:rounded-b-none max-sm:rounded-t-4xl ${
           isVisible ? "max-sm:translate-y-0" : "max-sm:translate-y-full"
         } motion-reduce:transition-none`}
       >
@@ -109,7 +109,9 @@ export function WelcomeScreen() {
           </div>
 
           <div className="w-full">
-            <Button onClick={handleContinue}>Continue</Button>
+            <Button rounded={true} onClick={handleContinue}>
+              Continue
+            </Button>
           </div>
         </div>
       </section>

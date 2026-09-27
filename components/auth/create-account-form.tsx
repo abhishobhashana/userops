@@ -199,28 +199,25 @@ export default function CreateAccountForm() {
           description="Keep this code somewhere safe. You will need it if you ever need to reset your password."
         />
 
-        <div className="rounded-2xl bg-background-secondary p-5">
-          <p className="mb-3 text-xs text-foreground-tertiary">Recovery Code</p>
+        <div className="flex flex-col gap-6">
+          <Textfield
+            id="code"
+            name="code"
+            label="Recovery Code"
+            type="text"
+            autoComplete="off"
+            value={recoveryCode}
+            info="This code is shown only once. UserOps does not store the original
+          recovery code."
+            disabled
+            className="font-mono break-all"
+          />
 
-          <p className="select-all break-all font-mono text-lg tracking-wider text-foreground">
-            {recoveryCode}
-          </p>
-        </div>
-
-        <p className="text-sm text-foreground-secondary">
-          This code is shown only once. UserOps does not store the original
-          recovery code.
-        </p>
-
-        <div className="flex flex-col gap-3 sm:flex-row">
           <Button
             type="button"
             onClick={downloadRecoveryCode}
-            className="flex-1"
+            className="flex-1 mt-6"
           >
-            <span className="material-symbols-rounded text-base!">
-              download
-            </span>
             Download Recovery Code
           </Button>
 

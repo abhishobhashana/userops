@@ -6,9 +6,11 @@ interface TextfieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   info?: string;
   error?: string;
+  className?: string;
 }
 
 export default function Textfield({
+  className,
   label,
   info,
   error,
@@ -36,6 +38,7 @@ export default function Textfield({
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
+            className,
             "w-full rounded-xl bg-background-secondary px-3.5 py-2.5",
             "text-foreground outline-none",
             "placeholder:text-foreground-tertiary",
