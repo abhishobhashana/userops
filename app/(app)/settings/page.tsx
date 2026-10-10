@@ -1,12 +1,10 @@
 import AppPage from "@/components/app/app-page";
-import AppShell from "@/components/app/app-shell";
+import Settings from "@/components/settings/settings";
 
 export default function SettingsPage() {
   return (
     <AppPage route="/settings">
-      <AppShell>
-        <div>Settings</div>
-      </AppShell>
+      <Settings />
     </AppPage>
   );
 }

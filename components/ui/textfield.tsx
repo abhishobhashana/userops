@@ -39,9 +39,9 @@ export default function Textfield({
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
             className,
-            "w-full rounded-xl bg-background-secondary px-3.5 py-2.5",
-            "text-foreground outline-none",
-            "placeholder:text-foreground-tertiary",
+            "w-full rounded-3xl bg-background-secondary px-4 py-3",
+            "text-text outline-none",
+            "placeholder:text-text-secondary",
             "transition-[border-color,box-shadow] duration-200",
             "focus:border-accent",
             "focus:ring-3 focus:ring-accent focus:outline-none!",
@@ -54,7 +54,7 @@ export default function Textfield({
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center text-foreground-tertiary"
+            className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center text-text-tertiary"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             <span
@@ -85,11 +85,11 @@ export default function Textfield({
       </div>
 
       {info && (
-        <p className="px-3.5 text-xs text-foreground-tertiary">{info}</p>
+        <p className="px-4 font-medium text-xs text-text-secondary">{info}</p>
       )}
 
       {error && (
-        <p id={`${id}-error`} className="px-3.5 text-xs text-red">
+        <p id={`${id}-error`} className="px-4 font-medium text-xs text-red">
           {error}
         </p>
       )}

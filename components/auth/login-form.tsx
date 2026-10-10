@@ -162,24 +162,25 @@ export default function LoginForm() {
 
         <div
           data-auth-animation
-          className="my-4 flex flex-col justify-between rounded-2xl bg-background-secondary"
+          className="my-4 flex flex-col justify-between rounded-3xl bg-background-secondary"
         >
           <Link
             href="/auth/forgot-password"
-            className="flex items-center justify-between rounded-t-2xl border-b border-border px-3.5 py-2.5 transition-colors focus:bg-background-tertiary"
+            className="flex items-center justify-between rounded-t-3xl px-4 py-3 transition-colors focus:bg-background-tertiary"
           >
             Forgot Password
-            <span className="material-symbols-rounded text-xs! text-foreground-tertiary">
+            <span className="material-symbols-rounded text-xs! font-semibold! text-text-tertiary">
               arrow_forward_ios
             </span>
           </Link>
 
+          <span className="h-px border-[0.5px] border-border mx-4" />
           <Link
             href="/auth/create-account"
-            className="flex items-center justify-between rounded-b-2xl px-3.5 py-2.5 transition-colors focus:bg-background-tertiary"
+            className="flex items-center justify-between rounded-b-3xl px-4 py-3 transition-colors focus:bg-background-tertiary"
           >
             Create a Free UserOps Account
-            <span className="material-symbols-rounded text-xs! text-foreground-tertiary">
+            <span className="material-symbols-rounded text-xs! font-semibold! text-text-tertiary">
               arrow_forward_ios
             </span>
           </Link>

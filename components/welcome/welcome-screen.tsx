@@ -70,7 +70,7 @@ export function WelcomeScreen() {
 
             <h1
               id="welcome-title"
-              className="mx-auto max-w-86 font-semibold text-4xl text-foreground max-sm:max-w-82.5"
+              className="mx-auto max-w-86 font-bold text-4xl max-sm:max-w-82.5"
             >
               Welcome to UserOps
             </h1>
@@ -109,9 +109,7 @@ export function WelcomeScreen() {
           </div>
 
           <div className="w-full">
-            <Button rounded={true} onClick={handleContinue}>
-              Continue
-            </Button>
+            <Button onClick={handleContinue}>Continue</Button>
           </div>
         </div>
       </section>
@@ -131,11 +129,9 @@ function WelcomeFeature({ icon, title, description }: WelcomeFeatureProps) {
       <div className="h-fit w-fit text-accent">{icon}</div>
 
       <div>
-        <h2 className="mb-1 font-semibold leading-5 text-foreground">
-          {title}
-        </h2>
+        <h2 className="mb-1 font-semibold leading-5">{title}</h2>
 
-        <p className="m-0 max-w-85 text-foreground-secondary">{description}</p>
+        <p className="m-0 max-w-85 text-text-secondary">{description}</p>
       </div>
     </article>
   );

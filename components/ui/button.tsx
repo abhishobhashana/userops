@@ -2,17 +2,17 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 import Loader from "./loader";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: "primary" | "secondary";
   loading?: boolean;
   startIcon?: ReactNode;
   endIcon?: ReactNode;
-  rounded?: boolean;
 }
 
 export default function Button({
   children,
+  variant = "primary",
   startIcon,
   endIcon,
-  rounded = false,
   loading = false,
   disabled,
   className = "",
@@ -28,13 +28,14 @@ export default function Button({
       className={[
         className,
         "cursor-pointer inline-flex w-full items-center justify-center gap-2",
-        "px-3.5 py-2.5",
+        "px-4 py-3",
         "font-medium",
         "transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none",
-        "bg-accent hover:bg-accent-hover active:scale-[0.985] hover:opacity-90",
-        "text-white",
+        variant === "primary" ? "bg-accent" : "bg-background-tertiary",
+        variant === "primary" ? "text-white" : "text-text",
+        "active:opacity-50",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        rounded ? "rounded-full" : "rounded-xl",
+        "rounded-full",
       ].join(" ")}
     >
       {loading ? (

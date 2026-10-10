@@ -7,7 +7,7 @@ interface AuthShellProps {
 
 export default function AuthShell({ children }: AuthShellProps) {
   return (
-    <main className="h-full min-h-screen flex items-center justify-center p-8">
+    <main className="h-full min-h-screen flex items-center justify-center p-4">
       <AuthAnimation className="m-auto w-full max-w-110">
         {children}
       </AuthAnimation>
