@@ -84,7 +84,25 @@ export const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
+export const profileUpdateSchema = z
+  .object({
+    first_name: createAccountSchema.shape.first_name.optional(),
+    last_name: createAccountSchema.shape.last_name.optional(),
+    email: emailSchema.optional(),
+  })
+  .strict()
+  .refine(
+    (data) =>
+      data.first_name !== undefined ||
+      data.last_name !== undefined ||
+      data.email !== undefined,
+    {
+      error: "Provide at least one field to update",
+    },
+  );
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type RecoveryCodeInput = z.infer<typeof recoveryCodeSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;

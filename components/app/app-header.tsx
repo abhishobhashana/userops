@@ -14,12 +14,12 @@ export default function AppHeader({
   return (
     <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
       <div className="min-w-0">
-        <h1 className="text-[clamp(2rem,4vw,3rem)] font-semibold tracking-[-0.04em] text-foreground">
+        <h1 className="text-[clamp(2rem,4vw,3rem)] font-semibold tracking-[-0.04em]">
           {title}
         </h1>
 
         {description ? (
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-foreground-secondary">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-text-secondary">
             {description}
           </p>
         ) : null}

@@ -28,7 +28,7 @@ export default function Loader({ size = "md", className = "" }: LoaderProps) {
           <span
             key={index}
             aria-hidden="true"
-            className="absolute left-1/2 top-1/2 h-[25%] w-[9%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-foreground-secondary opacity-0 animate-loader-fade"
+            className="absolute left-1/2 top-1/2 h-[25%] w-[9%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gray2 opacity-0 animate-loader-fade"
             style={
               {
                 transform: `rotate(${rotation}deg) translate(0, -100%)`,

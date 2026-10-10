@@ -107,7 +107,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
       <div
         aria-live="polite"
         aria-atomic="true"
-        className="pointer-events-none fixed inset-x-0 top-0 z-10 flex justify-center px-4 pt-4 sm:px-6 lg:inset-x-auto lg:right-0 lg:justify-end lg:px-6"
+        className="pointer-events-none fixed inset-x-0 top-0 z-40 flex justify-center px-4 pt-4 sm:px-6 lg:inset-x-auto lg:right-0 lg:justify-end lg:px-6"
       >
         <div className="flex w-full max-w-sm flex-col gap-2">
           {toasts.map((toast) => (
@@ -115,15 +115,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               key={toast.id}
               role="status"
               className={[
+                "liquid-glass",
                 "toast-item",
                 toast.closing ? "toast-item-exit" : "",
                 "pointer-events-auto relative overflow-hidden",
-                "rounded-2xl border-2 border-border",
-                "bg-background-secondary/20",
+                "rounded-2xl",
                 "p-2.5",
-                "shadow-md",
-                "backdrop-blur-xl",
-                "supports-backdrop-filter:bg-background-secondary/20",
               ].join(" ")}
             >
               <div className="flex items-center gap-3">

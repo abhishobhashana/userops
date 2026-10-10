@@ -83,39 +83,30 @@ export function Modal({
               mass: 0.8,
             }}
             className={[
-              "relative z-10 w-full lg:max-w-lg md:max-w-lg max-w-sm",
+              "liquid-glass",
+              "relative z-10 w-full max-w-sm",
               "overflow-hidden rounded-4xl",
-              "border border-border",
-              "bg-white/5",
-              "backdrop-blur-xl",
-              "shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1),0_2px_4px_-2px_rgba(0,0,0,0.1),inset_0_1px_1px_rgba(255,255,255,0.5),inset_0_-1px_1px_rgba(255,255,255,0.5)]",
               className,
             ].join(" ")}
             onClick={(event) => event.stopPropagation()}
           >
             {(title || description) && (
-              <div className="px-6 pb-2 pt-6 text-center">
+              <div className="p-6 pb-0">
                 {title && (
-                  <h2
-                    id="modal-title"
-                    className="text-xl font-semibold text-foreground"
-                  >
+                  <h3 id="modal-title" className="font-semibold">
                     {title}
-                  </h2>
+                  </h3>
                 )}
 
                 {description && (
-                  <p
-                    id="modal-description"
-                    className="mt-1.5 font-medium text-foreground-secondary"
-                  >
+                  <p id="modal-description" className="mt-1.5">
                     {description}
                   </p>
                 )}
               </div>
             )}
 
-            <div className="p-6">{children}</div>
+            <div className="p-4">{children}</div>
           </motion.div>
         </motion.div>
       )}

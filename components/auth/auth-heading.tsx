@@ -6,10 +6,10 @@ interface AuthHeadingProps {
 export default function AuthHeading({ title, description }: AuthHeadingProps) {
   return (
     <header data-auth-animation className="mt-6 mb-10">
-      <h1 className="text-2xl font-semibold text-foreground">{title}</h1>
+      <h1 className="lg:text-2xl md:text-3xl text-3xl font-bold">{title}</h1>
 
       {description && (
-        <h4 className="max-w-152 font-medium text-foreground-secondary">
+        <h4 className="max-w-152 font-medium text-text-secondary">
           {description}
         </h4>
       )}
