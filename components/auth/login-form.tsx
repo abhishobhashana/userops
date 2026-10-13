@@ -166,7 +166,7 @@ export default function LoginForm() {
         >
           <Link
             href="/auth/forgot-password"
-            className="flex items-center justify-between rounded-t-3xl px-4 py-3 transition-colors focus:bg-background-tertiary"
+            className="relative flex items-center justify-between rounded-t-3xl px-4 py-3 transition-colors focus:bg-background-tertiary after:absolute after:bottom-0 after:left-4 after:right-4 after:border-b after:border-border"
           >
             Forgot Password
             <span className="material-symbols-rounded text-xs! font-semibold! text-text-tertiary">
@@ -174,7 +174,6 @@ export default function LoginForm() {
             </span>
           </Link>
 
-          <span className="h-px border-[0.5px] border-border mx-4" />
           <Link
             href="/auth/create-account"
             className="flex items-center justify-between rounded-b-3xl px-4 py-3 transition-colors focus:bg-background-tertiary"

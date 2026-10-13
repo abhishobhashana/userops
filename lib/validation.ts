@@ -101,8 +101,43 @@ export const profileUpdateSchema = z
     },
   );
 
+export const changePasswordVerifySchema = z
+  .object({
+    method: z.enum(["currentPassword", "recoveryCode"]),
+    credential: z
+      .string()
+      .trim()
+      .min(1, {
+        error: "Verification credential is required",
+      })
+      .max(256),
+  })
+  .strict();
+
+export const changePasswordCompleteSchema = z
+  .object({
+    verificationToken: z.string().min(1, {
+      error: "Verification token is required",
+    }),
+    password: passwordSchema,
+    confirmPassword: z.string().min(1, {
+      error: "Confirm your password",
+    }),
+  })
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    error: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
 export type RecoveryCodeInput = z.infer<typeof recoveryCodeSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
+export type changePasswordVerifyInput = z.infer<
+  typeof changePasswordVerifySchema
+>;
+export type changePasswordCompleteInput = z.infer<
+  typeof changePasswordCompleteSchema
+>;

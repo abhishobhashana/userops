@@ -27,6 +27,14 @@ export interface ResetPasswordResponse {
   message: string;
 }
 
+export interface ChangePasswordVerifyResponse {
+  verificationToken: string;
+}
+
+export interface ChangePasswordCompleteResponse {
+  message: string;
+}
+
 export const authApi = {
   login(input: { email: string; password: string }) {
     return api.post<LoginResponse>("/api/v1/auth/login", input);
@@ -63,6 +71,27 @@ export const authApi = {
   }) {
     return api.post<ResetPasswordResponse>(
       "/api/v1/auth/reset-password",
+      input,
+    );
+  },
+
+  changePasswordVerify(input: {
+    method: "currentPassword" | "recoveryCode";
+    credential: string;
+  }) {
+    return api.post<ChangePasswordVerifyResponse>(
+      "/api/v1/auth/change-password/verify",
+      input,
+    );
+  },
+
+  changePasswordComplete(input: {
+    verificationToken: string;
+    password: string;
+    confirmPassword: string;
+  }) {
+    return api.post<ChangePasswordCompleteResponse>(
+      "/api/v1/auth/change-password/complete",
       input,
     );
   },

@@ -116,7 +116,7 @@ export default function Sidebar({
                     ease: [0.22, 1, 0.36, 1],
                   }}
                   whileTap={{
-                    scale: 0.9,
+                    scale: 1.1,
                   }}
                   className="ml-auto liquid-glass h-10 w-10 flex cursor-pointer items-center justify-center rounded-3xl text-text"
                 >
@@ -139,7 +139,7 @@ export default function Sidebar({
                   href={item.href}
                   onClick={onNavigation}
                   className={[
-                    "flex items-center gap-2",
+                    "flex items-center gap-2.5",
                     "rounded-xl px-3 py-1.5",
                     "font-medium",
                     "transition-colors duration-200",

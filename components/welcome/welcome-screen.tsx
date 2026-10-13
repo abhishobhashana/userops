@@ -54,7 +54,7 @@ export function WelcomeScreen() {
       } motion-reduce:transition-none`}
     >
       <section
-        className={`fixed z-10 w-full overflow-hidden bg-background-secondary transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-lg md:rounded-[42px] lg:max-w-lg lg:rounded-[42px] ${
+        className={`fixed z-10 w-full overflow-hidden bg-background-secondary transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-lg md:rounded-4xl lg:max-w-lg lg:rounded-4xl ${
           isVisible
             ? "translate-y-0 scale-100 opacity-100"
             : "translate-y-4 scale-[0.96] opacity-0"

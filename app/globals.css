@@ -562,6 +562,8 @@ button {
 
   background-color: color-mix(in srgb, var(--color-glass-bg) 12%, transparent);
 
+  border: 1px solid var(--color-border);
+
   backdrop-filter: blur(2px) saturate(var(--saturation));
 
   box-shadow:
@@ -629,4 +631,15 @@ button {
   transition:
     background-color 400ms cubic-bezier(1, 0, 0.4, 1),
     box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
+}
+
+:where(
+  button,
+  input,
+  textarea,
+  select,
+  a,
+  [tabindex]:not([tabindex="-1"])
+):focus-visible {
+  outline-offset: 1px;
 }
