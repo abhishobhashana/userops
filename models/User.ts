@@ -19,6 +19,10 @@ export interface IUser extends Document {
 
   createdAt: Date;
   updatedAt: Date;
+
+  passwordChangeTokenHash?: string;
+  passwordChangeTokenExpiresAt?: Date;
+  passwordChangeMethod?: "currentPassword" | "recoveryCode";
 }
 
 const userSchema = new Schema<IUser>(
@@ -69,6 +73,20 @@ const userSchema = new Schema<IUser>(
 
     resetTokenExpiresAt: {
       type: Date,
+      select: false,
+    },
+
+    passwordChangeTokenHash: {
+      type: String,
+      select: false,
+    },
+    passwordChangeTokenExpiresAt: {
+      type: Date,
+      select: false,
+    },
+    passwordChangeMethod: {
+      type: String,
+      enum: ["currentPassword", "recoveryCode"],
       select: false,
     },
 

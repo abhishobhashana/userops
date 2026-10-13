@@ -8,6 +8,7 @@ export const AUDIT_ACTIONS = [
   "USER_ACTIVATED",
   "ROLE_CHANGED",
   "PASSWORD_RESET",
+  "PASSWORD_CHANGED",
 ] as const;
 
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];

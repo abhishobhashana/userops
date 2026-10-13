@@ -228,6 +228,9 @@ export default function AppShell({ children }: AppShellProps) {
                 duration: 0.2,
                 ease: [0.22, 1, 0.36, 1],
               }}
+              whileTap={{
+                scale: 1.1,
+              }}
               className={[
                 "liquid-glass",
                 "flex h-10 w-10 shrink-0 cursor-pointer",

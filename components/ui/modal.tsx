@@ -1,7 +1,15 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
-import { type ReactNode, useEffect } from "react";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+  Description,
+  Transition,
+  TransitionChild,
+} from "@headlessui/react";
+import { Fragment, type ReactNode } from "react";
 
 interface ModalProps {
   open: boolean;
@@ -20,96 +28,63 @@ export function Modal({
   description,
   className = "",
 }: ModalProps) {
-  useEffect(() => {
-    if (!open) return;
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [open, onClose]);
-
   return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+    <Transition show={open} as={Fragment}>
+      <Dialog onClose={onClose} className="relative z-50">
+        <TransitionChild
+          as={Fragment}
+          enter="ease-out duration-300"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-200"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
         >
-          {/* Backdrop */}
-          <motion.div
-            className="absolute inset-0 cursor-default bg-black/20 backdrop-blur-md"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={onClose}
+          <DialogBackdrop
+            className="fixed inset-0 backdrop-blur-sm bg-background/50 ease-out duration-300 data-closed:opacity-0 transition-opacity"
+            aria-hidden="true"
           />
+        </TransitionChild>
 
-          {/* Modal */}
-          <motion.div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={title ? "modal-title" : undefined}
-            aria-describedby={description ? "modal-description" : undefined}
-            initial={{
-              opacity: 0,
-              scale: 0.94,
-              y: 8,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-              y: 0,
-            }}
-            exit={{
-              opacity: 0,
-              scale: 0.96,
-              y: 6,
-            }}
-            transition={{
-              type: "spring",
-              stiffness: 420,
-              damping: 32,
-              mass: 0.8,
-            }}
-            className={[
-              "liquid-glass",
-              "relative z-10 w-full max-w-sm",
-              "overflow-hidden rounded-4xl",
-              className,
-            ].join(" ")}
-            onClick={(event) => event.stopPropagation()}
-          >
-            {(title || description) && (
-              <div className="p-6 pb-0">
-                {title && (
-                  <h3 id="modal-title" className="font-semibold">
-                    {title}
-                  </h3>
-                )}
+        <TransitionChild
+          as={Fragment}
+          enter="transform transition-all ease-out duration-200"
+          enterFrom="scale-95 opacity-0"
+          enterTo="scale-100 opacity-100"
+          leave="transform transition-all ease-in duration-100"
+          leaveFrom="scale-100 opacity-100"
+          leaveTo="scale-[0.98] opacity-0"
+        >
+          <div className="fixed inset-0 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+            <DialogPanel
+              className={[
+                "liquid-glass",
+                "relative w-full max-w-sm",
+                "overflow-hidden rounded-4xl",
+                "transform transition ease-in-out duration-300",
+                "data-closed:translate-y-full data-closed:opacity-75",
+                className,
+              ].join(" ")}
+            >
+              {(title || description) && (
+                <div className="flex flex-col gap-1 p-6 pb-0">
+                  {title && (
+                    <DialogTitle className="font-semibold">{title}</DialogTitle>
+                  )}
 
-                {description && (
-                  <p id="modal-description" className="mt-1.5">
-                    {description}
-                  </p>
-                )}
-              </div>
-            )}
+                  {description && (
+                    <Description className="text-text-secondary">
+                      {description}
+                    </Description>
+                  )}
+                </div>
+              )}
 
-            <div className="p-4">{children}</div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+              <div className="p-4">{children}</div>
+            </DialogPanel>
+          </div>
+        </TransitionChild>
+      </Dialog>
+    </Transition>
   );
 }
