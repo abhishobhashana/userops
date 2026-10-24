@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import Button from "@/components/ui/button";
+import Icon from "../ui/icon";
 
 const ONBOARDING_KEY = "userops:onboarding-completed";
 
@@ -54,7 +55,7 @@ export function WelcomeScreen() {
       } motion-reduce:transition-none`}
     >
       <section
-        className={`fixed z-10 w-full overflow-hidden bg-background-secondary transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-lg md:rounded-4xl lg:max-w-lg lg:rounded-4xl ${
+        className={`fixed z-10 w-full overflow-hidden bg-background-secondary transition-all duration-450 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-lg md:rounded-[2.5rem] lg:max-w-lg lg:rounded-[2.5rem] ${
           isVisible
             ? "translate-y-0 scale-100 opacity-100"
             : "translate-y-4 scale-[0.96] opacity-0"
@@ -62,11 +63,9 @@ export function WelcomeScreen() {
           isVisible ? "max-sm:translate-y-0" : "max-sm:translate-y-full"
         } motion-reduce:transition-none`}
       >
-        <div className="flex min-h-[min(720px,calc(100dvh-72px))] flex-col p-6 pt-0 max-sm:min-h-[calc(100dvh-24px)] lg:p-8 lg:pt-0">
+        <div className="flex min-h-[min(720px,calc(100dvh-72px))] flex-col p-6 pt-0 max-sm:min-h-[calc(100dvh-24px)] lg:pt-0">
           <header className="my-auto text-center">
-            <span className="material-symbols-rounded text-accent text-6xl!">
-              manage_accounts
-            </span>
+            <Icon name="manage_accounts" size={52} className="text-accent" />
 
             <h1
               id="welcome-title"
@@ -78,31 +77,19 @@ export function WelcomeScreen() {
 
           <div className="mx-auto mb-auto flex w-full max-w-107.5 flex-col gap-7 max-sm:max-w-97.5 max-sm:gap-6.5">
             <WelcomeFeature
-              icon={
-                <span className="material-symbols-rounded text-3xl!">
-                  group
-                </span>
-              }
+              icon={<Icon name="group" size={26} />}
               title="Manage your people"
               description="Users, roles, and account status in one place."
             />
 
             <WelcomeFeature
-              icon={
-                <span className="material-symbols-rounded text-3xl!">
-                  admin_panel_settings
-                </span>
-              }
+              icon={<Icon name="admin_panel_settings" size={26} />}
               title="Control access"
               description="Role-based permissions keep your workspace secure."
             />
 
             <WelcomeFeature
-              icon={
-                <span className="material-symbols-rounded text-3xl!">
-                  history
-                </span>
-              }
+              icon={<Icon name="history" size={26} />}
               title="Understand what happened"
               description="Activity and audit visibility when it matters."
             />

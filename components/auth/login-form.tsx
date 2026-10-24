@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { authApi, getApiErrorMessage, getApiFieldErrors } from "@/lib/api";
 import { loginSchema } from "@/lib/validation";
+import Icon from "../ui/icon";
 
 type LoginField = "email" | "password";
 
@@ -169,9 +170,11 @@ export default function LoginForm() {
             className="relative flex items-center justify-between rounded-t-3xl px-4 py-3 transition-colors focus:bg-background-tertiary after:absolute after:bottom-0 after:left-4 after:right-4 after:border-b after:border-border"
           >
             Forgot Password
-            <span className="material-symbols-rounded text-xs! font-semibold! text-text-tertiary">
-              arrow_forward_ios
-            </span>
+            <Icon
+              name="arrow_forward_ios"
+              size={14}
+              className="text-text-tertiary"
+            />
           </Link>
 
           <Link
@@ -179,9 +182,11 @@ export default function LoginForm() {
             className="flex items-center justify-between rounded-b-3xl px-4 py-3 transition-colors focus:bg-background-tertiary"
           >
             Create a Free UserOps Account
-            <span className="material-symbols-rounded text-xs! font-semibold! text-text-tertiary">
-              arrow_forward_ios
-            </span>
+            <Icon
+              name="arrow_forward_ios"
+              size={14}
+              className="text-text-tertiary"
+            />
           </Link>
         </div>
 

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import Icon from "./icon";
 
 interface SidebarItem {
   label: string;
@@ -72,24 +73,22 @@ export default function Sidebar({
         className={[
           "liquid-glass",
           "fixed inset-0 z-50",
-          "left-3 top-3 right-auto bottom-3",
+          "md:left-3 md:top-3 right-auto md:bottom-3",
           "h-auto",
-          "w-[94%] md:w-76",
-          "rounded-3xl",
+          "w-full md:w-76",
+          "md:rounded-3xl",
           "backdrop-blur-xl",
         ].join(" ")}
       >
-        <div className="flex h-full flex-col p-4.5 pt-2.5">
+        <div className="flex h-full flex-col">
           {/* Header */}
-          <div className="flex h-12 shrink-0 items-center">
+          <div className="flex shrink-0 items-center p-4.5 md:p-2 md:pl-4.5">
             <Link
               href="/analytics"
               onClick={onNavigation}
               className="font-medium"
             >
-              <span className="material-symbols-rounded text-accent text-3xl!">
-                manage_accounts
-              </span>
+              <Icon name="manage_accounts" size={26} className="text-accent" />
             </Link>
 
             <AnimatePresence>
@@ -118,18 +117,19 @@ export default function Sidebar({
                   whileTap={{
                     scale: 1.1,
                   }}
-                  className="ml-auto liquid-glass h-10 w-10 flex cursor-pointer items-center justify-center rounded-3xl text-text"
+                  className="ml-auto liquid-glass size-11 flex cursor-pointer items-center justify-center rounded-3xl text-text"
                 >
-                  <span className="material-symbols-rounded text-xl!">
-                    thumbnail_bar
-                  </span>
+                  <Icon name="thumbnail_bar" />
                 </motion.button>
               )}
             </AnimatePresence>
           </div>
 
           {/* Navigation */}
-          <nav aria-label="Navigation" className="mt-5 flex flex-col gap-1">
+          <nav
+            aria-label="Navigation"
+            className="mt-5 flex flex-col gap-1 p-4.5 pt-0"
+          >
             {data.map((item) => {
               const active = pathname === item.href;
 
@@ -147,24 +147,22 @@ export default function Sidebar({
                     active ? "bg-background-tertiary" : "",
                   ].join(" ")}
                 >
-                  <span
-                    className={[
-                      "material-symbols-rounded",
-                      "text-[24px]!",
-                      active ? "text-accent" : "text-foreground",
-                    ].join(" ")}
-                  >
-                    {item.icon}
-                  </span>
+                  <Icon
+                    name={item.icon}
+                    size={24}
+                    className={active ? "text-accent" : "text-foreground"}
+                  />
 
-                  <span>{item.label}</span>
+                  <span className={active ? "text-accent" : "text-foreground"}>
+                    {item.label}
+                  </span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Account */}
-          <div className="relative mt-auto">
+          <div className="relative mt-auto p-4.5">
             <button
               type="button"
               onClick={onAccountClick}
@@ -178,11 +176,11 @@ export default function Sidebar({
                 "active:opacity-70",
               ].join(" ")}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-tertiary text-xs font-semibold">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-tertiary font-semibold">
                 {initials}
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 font-medium">
                 <p className="truncate text-sm">
                   {user ? `${user.first_name} ${user.last_name}` : "User"}
                 </p>

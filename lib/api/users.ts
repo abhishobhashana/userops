@@ -1,63 +1,40 @@
-import type { PublicUser } from "@/lib/auth/types";
+import type { PublicUser, UserRole } from "@/lib/auth/types";
+
+import { api } from "./client";
+
+export type { UserRole };
+
+export type UserStatus = "ACTIVE" | "INVITED" | "SUSPENDED";
+
+export interface UserRow extends PublicUser {
+  role: UserRole;
+  status: UserStatus;
+  lastLoginAt?: string | null;
+}
 
 type EditableProfile = Partial<
   Pick<PublicUser, "first_name" | "last_name" | "email">
 >;
 
 interface UpdateProfileResponse {
-  success: true;
-  data: {
-    user: PublicUser;
-  };
+  user: PublicUser;
 }
 
-interface ErrorResponse {
-  success?: false;
-  error?: {
-    code?: string;
-    message?: string;
-  };
-}
+export const usersApi = {
+  getUsers() {
+    return api.get<UserRow[]>("/api/v1/users", {
+      cache: "no-store",
+    });
+  },
+};
 
 export async function updateMyProfile(
   updates: EditableProfile,
 ): Promise<PublicUser> {
-  const response = await fetch("/api/v1/users/me", {
-    method: "PATCH",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
-    body: JSON.stringify(updates),
-  });
+  const result = await api.patch<UpdateProfileResponse>(
+    "/api/v1/users/me",
+    updates,
+  );
 
-  const rawBody = await response.text();
-
-  if (!rawBody.trim()) {
-    throw new Error(
-      `API returned an empty response (HTTP ${response.status}).`,
-    );
-  }
-
-  let result: UpdateProfileResponse | ErrorResponse;
-
-  try {
-    result = JSON.parse(rawBody);
-  } catch {
-    console.error("Non-JSON API response:", rawBody.slice(0, 300));
-
-    throw new Error(
-      `API returned an invalid response (HTTP ${response.status}). Check the server logs.`,
-    );
-  }
-
-  if (!response.ok || !("data" in result) || !result.data?.user) {
-    throw new Error(
-      ("error" in result && result.error?.message) ||
-        `Unable to update profile (HTTP ${response.status}).`,
-    );
-  }
-
-  return result.data.user;
+  return result.user;
 }

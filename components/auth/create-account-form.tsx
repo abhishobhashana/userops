@@ -7,12 +7,12 @@ import AuthHeading from "@/components/auth/auth-heading";
 import AuthShell from "@/components/auth/auth-shell";
 
 import Textfield from "@/components/ui/textfield";
-import BackButton from "@/components/ui/back-button";
 import Button from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 import { authApi, getApiErrorMessage, getApiFieldErrors } from "@/lib/api";
 import { createAccountSchema } from "@/lib/validation";
+import ActionButton from "../ui/action-button";
 
 type CreateAccountField = "first_name" | "last_name" | "email" | "password";
 
@@ -235,7 +235,12 @@ export default function CreateAccountForm() {
 
   return (
     <AuthShell>
-      <BackButton href="/auth/login" />
+      <ActionButton
+        iconClassName="pr-0.5"
+        icon="arrow_back_ios_new"
+        label="Back Button"
+        href="/auth/login"
+      />
 
       <AuthHeading title="Create a Free UserOps Account" />
 
