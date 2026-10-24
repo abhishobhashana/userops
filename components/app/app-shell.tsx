@@ -10,6 +10,7 @@ import { ROUTE_ACCESS } from "@/lib/auth/route-access";
 import Sidebar from "../ui/sidebar";
 import Button from "../ui/button";
 import { Modal } from "../ui/modal";
+import Icon from "../ui/icon";
 
 interface AppShellProps {
   children: ReactNode;
@@ -148,6 +149,13 @@ export default function AppShell({ children }: AppShellProps) {
       {/* SIDEBAR                                                       */}
       {/* ============================================================ */}
 
+      {sidebarOpen && (
+        <div
+          className="md:hidden fixed inset-0 backdrop-blur-md bg-black/50 ease-out duration-300 data-closed:opacity-0 transition-opacity"
+          aria-hidden="true"
+        />
+      )}
+
       <Sidebar
         data={visibleNavigation}
         pathname={pathname}
@@ -233,15 +241,13 @@ export default function AppShell({ children }: AppShellProps) {
               }}
               className={[
                 "liquid-glass",
-                "flex h-10 w-10 shrink-0 cursor-pointer",
+                "flex size-11 shrink-0 cursor-pointer",
                 "items-center justify-center",
                 "rounded-full",
                 "text-text",
               ].join(" ")}
             >
-              <span className="material-symbols-rounded text-xl!">
-                thumbnail_bar
-              </span>
+              <Icon name="thumbnail_bar" />
             </motion.button>
           </motion.div>
 
@@ -276,7 +282,7 @@ export default function AppShell({ children }: AppShellProps) {
             title="Sign Out"
             description="Are you sure you want to sign out?"
           >
-            <div className="flex flex-row gap-4">
+            <div className="flex flex-row gap-2.5">
               <Button
                 variant="secondary"
                 className="bg-foreground-tertiary hover:bg-foreground-tertiary"

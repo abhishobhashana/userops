@@ -33,7 +33,7 @@ export default function Button({
         "transition-[transform,opacity] duration-200 ease-out motion-reduce:transition-none",
         variant === "primary" ? "bg-accent" : "bg-background-tertiary",
         variant === "primary" ? "text-white" : "text-text",
-        "active:opacity-50",
+        "active:opacity-70",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "rounded-full",
       ].join(" ")}

@@ -14,6 +14,7 @@ import Button from "../ui/button";
 import { Modal } from "../ui/modal";
 import Textfield from "../ui/textfield";
 import { useToast } from "../ui/toast";
+import Icon from "../ui/icon";
 
 function formatRole(role: UserRole) {
   return role
@@ -89,12 +90,12 @@ function InfoItem({
         <div className="flex text-text-secondary">{children}</div>
 
         {editable && (
-          <span
+          <Icon
+            name="arrow_forward_ios"
+            size={14}
+            className="text-text-tertiary"
             aria-hidden="true"
-            className="material-symbols-rounded text-sm! font-semibold! text-text-tertiary"
-          >
-            arrow_forward_ios
-          </span>
+          />
         )}
       </div>
     </>
@@ -233,8 +234,6 @@ function EditProfileModal({
   >({});
 
   const toast = useToast();
-
-  // Reset the form when the selected field or its initial value changes.
   useEffect(() => {
     if (!field) return;
 
@@ -428,7 +427,7 @@ function EditProfileModal({
               type="submit"
               disabled={isSaving || !isValid || !hasChanged}
             >
-              {isSaving ? "Saving..." : "Save changes"}
+              {isSaving ? "Saving..." : "Continue"}
             </Button>
           </div>
         </form>

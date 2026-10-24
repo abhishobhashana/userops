@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import Icon from "./icon";
 
 interface TextfieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label: string;
   info?: string;
   error?: string;
   className?: string;
+  clearable?: boolean;
+  searchable?: boolean;
+  onClear?: () => void;
 }
 
 export default function Textfield({
@@ -16,25 +20,62 @@ export default function Textfield({
   error,
   type = "text",
   id,
+  clearable = false,
+  searchable = false,
+  onClear,
+  value,
+  defaultValue,
+  onChange,
   ...props
 }: TextfieldProps) {
   const [showPassword, setShowPassword] = useState(false);
+  const [internalValue, setInternalValue] = useState(
+    String(defaultValue ?? ""),
+  );
 
   const isPassword = type === "password";
+  const isControlled = value !== undefined;
+
+  const currentValue = isControlled ? String(value ?? "") : internalValue;
 
   const inputType = isPassword && showPassword ? "text" : type;
+  const showClear = clearable && currentValue.length > 0;
+
+  const handleClear = () => {
+    if (!isControlled) {
+      setInternalValue("");
+    }
+    onClear?.();
+  };
 
   return (
     <div data-auth-animation className="space-y-2">
-      <label htmlFor={id} className="block text-foreground">
-        {label}
-      </label>
+      {label && (
+        <label htmlFor={id} className="px-4 block text-foreground">
+          {label}
+        </label>
+      )}
 
       <div className="relative mb-1">
+        {searchable && (
+          <span className="absolute left-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center pointer-events-none">
+            <Icon name="search" />
+          </span>
+        )}
+
         <input
           {...props}
           id={id}
           type={inputType}
+          value={isControlled ? value : undefined}
+          defaultValue={isControlled ? undefined : defaultValue}
+          onChange={(event) => {
+            if (!isControlled) {
+              setInternalValue(event.target.value);
+            }
+
+            onChange?.(event);
+          }}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
@@ -46,40 +87,55 @@ export default function Textfield({
             "focus:border-accent",
             "focus:ring-3 focus:ring-accent focus:outline-none!",
             error ? "ring-3 ring-red outline-none! pr-12" : "border-border",
-            isPassword ? "pr-12" : "",
+            searchable ? "pl-12" : "",
+            showClear || isPassword ? "pr-12" : "",
           ].join(" ")}
         />
+
+        {showClear && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className={[
+              "absolute top-1/2 flex size-8",
+              "-translate-y-1/2 cursor-pointer items-center justify-center",
+              "text-text-tertiary transition-colors",
+              isPassword ? "right-11" : "right-3",
+            ].join(" ")}
+            aria-label="Clear input"
+          >
+            <Icon name="cancel" fill />
+          </button>
+        )}
 
         {isPassword && (
           <button
             type="button"
             onClick={() => setShowPassword((current) => !current)}
-            className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center text-text-tertiary"
+            className="absolute right-3 top-1/2 flex size-8 -translate-y-1/2 cursor-pointer items-center justify-center text-text-tertiary"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            <span
+            <Icon
+              name="visibility_lock"
+              size={22}
               className={[
-                "material-symbols-rounded absolute",
-                "transition-all duration-300 ease-out",
+                "absolute transition-all duration-300 ease-out",
                 showPassword
                   ? "scale-100 rotate-0 opacity-100"
                   : "scale-90 -rotate-12 opacity-0",
               ].join(" ")}
-            >
-              visibility_lock
-            </span>
+            />
 
-            <span
+            <Icon
+              name="visibility"
+              size={22}
               className={[
-                "material-symbols-rounded absolute",
-                "transition-all duration-300 ease-out",
+                "absolute transition-all duration-300 ease-out",
                 showPassword
                   ? "scale-90 rotate-12 opacity-0"
                   : "scale-100 rotate-0 opacity-100",
               ].join(" ")}
-            >
-              visibility
-            </span>
+            />
           </button>
         )}
       </div>

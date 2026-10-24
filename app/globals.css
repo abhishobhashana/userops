@@ -38,25 +38,27 @@
 
   /* Backgrounds */
   --color-background: rgba(242, 242, 247, 1);
-  --color-background-secondary: rgba(255, 255, 255, 1);
+  --color-background-secondary: var(--color-white);
   --color-background-tertiary: rgba(120, 120, 128, 0.16);
 
   /* text */
   --color-text: var(--color-black);
-  --color-text-primary: rgba(60, 60, 67, 0.3);
-  --color-text-secondary: rgba(114, 114, 114, 1);
-  --color-text-tertiary: rgba(191, 191, 191, 1);
+  --color-text-secondary: rgba(60, 60, 67, 0.6);
+  --color-text-tertiary: rgba(60, 60, 67, 0.3);
+  --color-text-quaternary: rgba(60, 60, 67, 0.18);
 
   /* Borders */
-  --color-border: rgba(230, 230, 230, 1);
+  --color-border: rgba(0, 0, 0, 0.12);
 
   /* Accent */
   --color-accent: var(--color-blue);
   --color-accent-hover: rgba(0, 122, 255, 0.95);
 
   /* Glass */
-  --color-glass-bg: rgba(242, 242, 247, 0.75);
+  --color-glass-bg: rgba(242, 242, 247, 1);
   --color-glass-light: rgba(255, 255, 255, 1);
+  --color-glass-border: rgba(0, 0, 0, 0.12);
+  --color-glass-top-shadow: rgba(142, 142, 147, 1);
 
   /* Overlay */
   --color-overlay: rgba(255, 255, 255, 0.82);
@@ -96,24 +98,26 @@
     /* Backgrounds */
     --color-background: var(--color-black);
     --color-background-secondary: rgba(28, 28, 30, 1);
-    --color-background-tertiary: rgba(120, 120, 128, 0.32);
+    --color-background-tertiary: rgba(44, 44, 46, 1);
 
     /* text */
     --color-text: var(--color-white);
-    --color-text-primary: rgba(235, 235, 245, 0.3);
-    --color-text-secondary: rgba(138, 138, 138, 1);
-    --color-text-tertiary: rgba(64, 64, 64, 1);
+    --color-text-secondary: rgba(235, 235, 245, 0.7);
+    --color-text-tertiary: rgba(235, 235, 245, 0.3);
+    --color-text-quaternary: rgba(235, 235, 245, 0.16);
 
     /* Borders */
-    --color-border: rgba(44, 44, 46, 1);
+    --color-border: rgba(255, 255, 255, 0.17);
 
     /* Accent */
     --color-accent: var(--color-blue);
     --color-accent-hover: rgba(10, 132, 255, 0.95);
 
     /* Glass */
-    --color-glass-bg: rgba(28, 28, 30, 0.75);
-    --color-glass-light: rgba(242, 242, 247, 0.75);
+    --color-glass-bg: rgba(28, 28, 30, 1);
+    --color-glass-light: rgba(72, 72, 74, 1);
+    --color-glass-border: rgba(28, 28, 30, 0.1);
+    --color-glass-top-shadow: rgba(0, 0, 0, 1);
 
     /* Overlay */
     --color-overlay: rgba(0, 0, 0, 0.82);
@@ -132,9 +136,9 @@
   --color-background-tertiary: var(--color-background-tertiary);
 
   --color-text: var(--color-text);
-  --color-text-primary: var(--color-text-primary);
   --color-text-secondary: var(--color-text-secondary);
   --color-text-tertiary: var(--color-text-tertiary);
+  --color-text-quaternary: var(--color-text-quaternary);
 
   --color-border: var(--color-border);
 
@@ -143,6 +147,8 @@
 
   --color-glass-bg: var(--color-glass-bg);
   --color-glass-light: var(--color-glass-light);
+  --color-glass-border: var(--color-glass-border);
+  --color-glass-top-shadow: var(--glass-top-shadow);
 
   --color-white: var(--color-white);
   --color-black: var(--color-black);
@@ -558,78 +564,41 @@ button {
   --glass-reflex-dark: 1;
   --glass-reflex-light: 1;
 
-  --saturation: 180%;
+  background-color: color-mix(in srgb, var(--color-glass-bg) 40%, transparent);
 
-  background-color: color-mix(in srgb, var(--color-glass-bg) 12%, transparent);
+  background-image: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-glass-top-shadow) 20%, transparent) 0%,
+    color-mix(in srgb, var(--glass-light) 10%, transparent) 100%
+  );
 
-  border: 1px solid var(--color-border);
+  border-inline: 1.5px solid var(--color-glass-border);
 
-  backdrop-filter: blur(2px) saturate(var(--saturation));
+  backdrop-filter: blur(2px);
 
   box-shadow:
-    inset 0 0 2px 2px
-      color-mix(
-        in srgb,
-        var(--glass-light) calc(var(--glass-reflex-light) * 10%),
-        transparent
-      ),
-    inset 1.8px 3px 1px -2px
+    inset 0px 4px 0px -2px
       color-mix(
         in srgb,
         var(--glass-light) calc(var(--glass-reflex-light) * 90%),
         transparent
       ),
-    inset -2px -2px 1px -2px
+    inset 0px -4px 0px -2px
       color-mix(
         in srgb,
-        var(--glass-light) calc(var(--glass-reflex-light) * 80%),
+        var(--glass-light) calc(var(--glass-reflex-light) * 90%),
         transparent
       ),
-    inset -3px -8px 2px -6px
-      color-mix(
-        in srgb,
-        var(--glass-light) calc(var(--glass-reflex-light) * 60%),
-        transparent
-      ),
-    inset -0.3px -1px 4px 0px
+    0px 4px 16px 0px
       color-mix(
         in srgb,
         var(--glass-dark) calc(var(--glass-reflex-dark) * 12%),
-        transparent
-      ),
-    inset -1.5px 2.5px 0px -2px
-      color-mix(
-        in srgb,
-        var(--glass-dark) calc(var(--glass-reflex-dark) * 20%),
-        transparent
-      ),
-    inset 0px 3px 4px -2px
-      color-mix(
-        in srgb,
-        var(--glass-dark) calc(var(--glass-reflex-dark) * 20%),
-        transparent
-      ),
-    inset 2px -6.5px 1px -4px
-      color-mix(
-        in srgb,
-        var(--glass-dark) calc(var(--glass-reflex-dark) * 10%),
-        transparent
-      ),
-    0px 1px 5px 0px
-      color-mix(
-        in srgb,
-        var(--glass-dark) calc(var(--glass-reflex-dark) * 10%),
-        transparent
-      ),
-    0px 6px 16px 0px
-      color-mix(
-        in srgb,
-        var(--glass-dark) calc(var(--glass-reflex-dark) * 8%),
         transparent
       );
 
   transition:
     background-color 400ms cubic-bezier(1, 0, 0.4, 1),
+    background-image 400ms cubic-bezier(1, 0, 0.4, 1),
     box-shadow 400ms cubic-bezier(1, 0, 0.4, 1);
 }
 
