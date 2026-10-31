@@ -56,10 +56,10 @@ export default function Textfield({
         </label>
       )}
 
-      <div className="relative mb-1">
+      <div className="relative">
         {searchable && (
-          <span className="absolute left-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center pointer-events-none">
-            <Icon name="search" />
+          <span className="z-1 absolute left-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center pointer-events-none">
+            <Icon name="search" size={22} />
           </span>
         )}
 
@@ -80,14 +80,14 @@ export default function Textfield({
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
             className,
-            "w-full rounded-3xl bg-background-secondary px-4 py-3",
+            "w-full rounded-3xl bg-background-secondary size-12 px-4 py-3",
             "text-text outline-none",
             "placeholder:text-text-secondary",
-            "transition-[border-color,box-shadow] duration-200",
-            "focus:border-accent",
-            "focus:ring-3 focus:ring-accent focus:outline-none!",
-            error ? "ring-3 ring-red outline-none! pr-12" : "border-border",
-            searchable ? "pl-12" : "",
+            "transition-[border-color,box-shadow]! duration-200!",
+            "focus:border-accent!",
+            "focus:ring-3! focus:ring-accent! focus:outline-none!",
+            error ? "ring-3! ring-red! outline-none! pr-12" : "border-border",
+            searchable ? "pl-11" : "",
             showClear || isPassword ? "pr-12" : "",
           ].join(" ")}
         />
@@ -98,13 +98,13 @@ export default function Textfield({
             onClick={handleClear}
             className={[
               "absolute top-1/2 flex size-8",
-              "-translate-y-1/2 cursor-pointer items-center justify-center",
-              "text-text-tertiary transition-colors",
+              "-translate-y-1/2 cursor-pointer items-center justify-center text-text-secondary",
+              "transition-colors",
               isPassword ? "right-11" : "right-3",
             ].join(" ")}
             aria-label="Clear input"
           >
-            <Icon name="cancel" fill />
+            <Icon name="cancel" fill size={20} />
           </button>
         )}
 

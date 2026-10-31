@@ -41,7 +41,7 @@ export function Modal({
           leaveTo="opacity-0"
         >
           <DialogBackdrop
-            className="fixed inset-0 backdrop-blur-sm bg-black/50 ease-out duration-300 data-closed:opacity-0 transition-opacity"
+            className="fixed inset-0 backdrop-blur-sm bg-black/60 ease-out duration-300 data-closed:opacity-0 transition-opacity"
             aria-hidden="true"
           />
         </TransitionChild>
@@ -59,28 +59,24 @@ export function Modal({
             <DialogPanel
               className={[
                 "liquid-glass",
-                "relative w-full max-w-sm",
-                "overflow-hidden rounded-4xl",
+                "relative w-full max-w-sm m-4",
+                "overflow-hidden rounded-[2.5rem]",
                 "transform transition ease-in-out duration-300",
                 "data-closed:translate-y-full data-closed:opacity-75",
                 className,
               ].join(" ")}
             >
               {(title || description) && (
-                <div className="flex flex-col gap-4 p-6">
+                <div className="flex flex-col gap-4 p-7">
                   {title && (
                     <DialogTitle className="font-semibold">{title}</DialogTitle>
                   )}
 
-                  {description && (
-                    <Description className="text-text-secondary">
-                      {description}
-                    </Description>
-                  )}
+                  {description && <Description>{description}</Description>}
                 </div>
               )}
 
-              <div className="p-3.5 pt-0">{children}</div>
+              <div className="p-4.5 pt-0">{children}</div>
             </DialogPanel>
           </div>
         </TransitionChild>

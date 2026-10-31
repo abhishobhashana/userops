@@ -4,6 +4,7 @@ import { SmoothScroll } from "@/components/providers/smooth-scroll";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ToastProvider } from "@/components/ui/toast";
+import Providers from "./providers";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -87,10 +88,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body>
         <AuthProvider>
-          <ToastProvider>
-            <SmoothScroll />
-            {children}
-          </ToastProvider>
+          <Providers>
+            <ToastProvider>
+              <SmoothScroll />
+              {children}
+            </ToastProvider>
+          </Providers>
         </AuthProvider>
       </body>
     </html>

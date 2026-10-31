@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Table } from "@/components/ui/table";
 import { Pagination } from "@/components/ui/pagination";
@@ -10,18 +10,11 @@ import Textfield from "../ui/textfield";
 import Select, { type SelectOption } from "../ui/select";
 
 import type { UserRow, UserRole, UserStatus } from "@/lib/api/users";
+import Header from "../ui/header";
+import ActionButton from "../ui/action-button";
 
 interface UsersProps {
   initialUsers: UserRow[];
-}
-
-interface UsersApiResponse {
-  success: boolean;
-  data?: UserRow[];
-  message?: string;
-  error?: {
-    message?: string;
-  };
 }
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -32,20 +25,10 @@ const ROLE_LABELS: Record<UserRole, string> = {
 };
 
 const STATUS_STYLES: Record<UserStatus, string> = {
-  ACTIVE: "bg-green",
-  INVITED: "bg-accent",
-  SUSPENDED: "bg-red",
+  ACTIVE: "text-green",
+  INVITED: "text-accent",
+  SUSPENDED: "text-red",
 };
-
-function Badge({ label, className }: { label: string; className?: string }) {
-  return (
-    <span
-      className={`inline-flex rounded-xl px-2.5 py-1 font-medium text-white ${className ?? ""}`}
-    >
-      {label}
-    </span>
-  );
-}
 
 export default function Users({ initialUsers }: UsersProps) {
   const [users, setUsers] = useState<UserRow[]>(initialUsers);
@@ -54,43 +37,6 @@ export default function Users({ initialUsers }: UsersProps) {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // Refresh users when requested by the user.
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const response = await fetch("/api/v1/users", {
-        credentials: "same-origin",
-        cache: "no-store",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      const result: UsersApiResponse = await response.json();
-
-      if (!response.ok || result.success !== true) {
-        throw new Error(
-          result.message ?? result.error?.message ?? "Failed to load users",
-        );
-      }
-
-      if (!Array.isArray(result.data)) {
-        throw new Error("Unexpected users API response format");
-      }
-
-      setUsers(result.data);
-      setPage(1);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load users");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   const filteredUsers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -124,19 +70,31 @@ export default function Users({ initialUsers }: UsersProps) {
     return filteredUsers.slice(start, start + pageSize);
   }, [filteredUsers, currentPage, pageSize]);
 
+  const roleIcons: Record<string, string> = {
+    SUPER_ADMIN: "admin_panel_settings",
+    ADMIN: "shield_person",
+    MANAGER: "badge",
+    USER: "person",
+  };
+
   const roleOptions: SelectOption[] = [
-    { label: "All Roles", value: "ALL" },
+    {
+      label: "All Roles",
+      value: "ALL",
+      icon: "groups",
+    },
     ...Object.entries(ROLE_LABELS).map(([value, label]) => ({
       label,
       value,
+      icon: roleIcons[value as keyof typeof ROLE_LABELS],
     })),
   ];
 
   const statusOptions: SelectOption[] = [
-    { label: "All Statuses", value: "ALL" },
-    { label: "Active", value: "ACTIVE" },
-    { label: "Invited", value: "INVITED" },
-    { label: "Suspended", value: "SUSPENDED" },
+    { label: "All Statuses", value: "ALL", icon: "person" },
+    { label: "Active", value: "ACTIVE", icon: "person_check" },
+    { label: "Invited", value: "INVITED", icon: "person_add" },
+    { label: "Suspended", value: "SUSPENDED", icon: "person_off" },
   ];
 
   function formatLastLogin(lastLoginAt?: string | null) {
@@ -168,73 +126,63 @@ export default function Users({ initialUsers }: UsersProps) {
             {user.first_name} {user.last_name}
           </p>
         ) : (
-          "-"
+          "—"
         ),
     },
     {
       key: "email",
       header: "Email",
       render: (user) => user.email,
-      align: "end",
     },
     {
       key: "lastLoginAt",
-      header: "Last login",
+      header: "Date Last login",
       render: (user) =>
-        user.lastLoginAt ? formatLastLogin(user.lastLoginAt) : "-",
+        user.lastLoginAt ? formatLastLogin(user.lastLoginAt) : "—",
     },
     {
       key: "role",
       header: "Role",
-      render: (user) => (
-        <p className="uppercase">{ROLE_LABELS[user.role] ?? user.role}</p>
-      ),
+      render: (user) => <p>{ROLE_LABELS[user.role] ?? user.role}</p>,
+      align: "end",
     },
     {
       key: "status",
       header: "Status",
       render: (user) => (
-        <Badge
-          label={user.status}
-          className={STATUS_STYLES[user.status] ?? "bg-background-secondary"}
-        />
+        <p
+          className={`${STATUS_STYLES[user.status] ?? "text-text-secondary"} font-medium capitalize`}
+        >
+          {user.status.charAt(0).toUpperCase() +
+            user.status.slice(1).toLowerCase()}
+        </p>
       ),
-      align: "end",
     },
   ];
 
+  const hasActiveFilters =
+    search.trim() !== "" || roleFilter !== "ALL" || statusFilter !== "ALL";
+
+  const clearFilters = () => {
+    setSearch("");
+    setRoleFilter("ALL");
+    setStatusFilter("ALL");
+    setPage(1);
+  };
+
   return (
-    <main className="mx-auto w-full max-w-7xl space-y-6">
-      <header className="flex flex-wrap items-start justify-between gap-4">
-        <section>
-          <h1 className="text-3xl font-bold md:text-3xl lg:text-2xl">
-            Total users
-          </h1>
-          <p className="mt-1 text-2xl font-semibold text-text-secondary">
-            {users.length}
-          </p>
-        </section>
-      </header>
+    <main className="space-y-8">
+      <Header title="Users" subtitle={`${users.length} — Users`}>
+        <ActionButton
+          icon="add_2"
+          label="Add User"
+          onClick={() => {}}
+          disabled
+        />
+      </Header>
 
-      {error && (
-        <div
-          role="alert"
-          className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
-        >
-          {error}
-          <button
-            type="button"
-            onClick={() => void loadUsers()}
-            disabled={loading}
-            className="ml-3 font-semibold underline disabled:opacity-50"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      <section className="space-y-6">
-        <div className="grid w-full grid-cols-1 gap-3 md:grid-cols-3">
+      <section className="mx-auto w-full max-w-7xl space-y-8">
+        <div className="flex justify-between gap-2.5">
           <Textfield
             label=""
             aria-label="Search users"
@@ -243,43 +191,62 @@ export default function Users({ initialUsers }: UsersProps) {
               setSearch(event.target.value);
               setPage(1);
             }}
-            placeholder="Search by Name, Email, Role and Status"
+            placeholder="Search"
             searchable
             clearable
             onClear={() => {
               setSearch("");
               setPage(1);
             }}
+            className="liquid-glass"
           />
 
-          <Select
-            value={roleFilter}
-            onChange={(value) => {
-              setRoleFilter(value);
-              setPage(1);
-            }}
-            options={roleOptions}
-            placeholder="All Roles"
-            name="roleFilter"
-          />
+          <div className="flex gap-2.5">
+            <Select
+              value={roleFilter}
+              onChange={(value) => {
+                setRoleFilter(value);
+                setPage(1);
+              }}
+              options={roleOptions}
+              placeholder="All Roles"
+              name="roleFilter"
+              iconOnly
+              iconActiveBackground
+              className="w-12! liquid-glass"
+              optionsClassName="w-52!"
+            />
 
-          <Select
-            value={statusFilter}
-            onChange={(value) => {
-              setStatusFilter(value);
-              setPage(1);
-            }}
-            options={statusOptions}
-            placeholder="All Statuses"
-            name="statusFilter"
-          />
+            <Select
+              value={statusFilter}
+              onChange={(value) => {
+                setStatusFilter(value);
+                setPage(1);
+              }}
+              options={statusOptions}
+              placeholder="All Statuses"
+              name="statusFilter"
+              iconOnly
+              iconActiveBackground
+              className="w-12! liquid-glass"
+              optionsClassName="w-52!"
+            />
+
+            {hasActiveFilters && (
+              <ActionButton
+                icon="close"
+                label="Clear all filters"
+                size={28}
+                onClick={clearFilters}
+              />
+            )}
+          </div>
         </div>
 
         <Table
           columns={columns}
           data={pageUsers}
           getRowKey={(user) => user.id}
-          loading={loading}
           emptyMessage="No users match your filters."
         />
 
@@ -292,7 +259,6 @@ export default function Users({ initialUsers }: UsersProps) {
             setPageSize(size);
             setPage(1);
           }}
-          disabled={loading}
         />
       </section>
     </main>

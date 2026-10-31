@@ -369,9 +369,15 @@ function EditProfileModal({
     <Modal
       open={open}
       onClose={handleClose}
-      title={fieldConfig ? `Edit ${fieldConfig.label}` : undefined}
+      title={
+        fieldConfig
+          ? `Do you want to change your ${fieldConfig.label}?`
+          : undefined
+      }
       description={
-        fieldConfig ? `Update your ${fieldConfig.label}.` : undefined
+        fieldConfig
+          ? `You can change your ${fieldConfig.label}. This will reflect on your account.`
+          : undefined
       }
     >
       {field && fieldConfig && (

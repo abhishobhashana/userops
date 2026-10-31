@@ -2,7 +2,6 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
-import { motion } from "framer-motion";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { ROUTE_ACCESS } from "@/lib/auth/route-access";
@@ -10,7 +9,9 @@ import { ROUTE_ACCESS } from "@/lib/auth/route-access";
 import Sidebar from "../ui/sidebar";
 import Button from "../ui/button";
 import { Modal } from "../ui/modal";
-import Icon from "../ui/icon";
+
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { setSidebarOpen } from "@/lib/features/sidebarSlice";
 
 interface AppShellProps {
   children: ReactNode;
@@ -39,61 +40,37 @@ const navigation = [
   },
 ];
 
-const STORAGE_KEY = "userops-sidebar-open";
-
-const titleVariants = {
-  visible: {
-    opacity: 1,
-    scale: 1,
-    filter: "blur(0px)",
-  },
-  hidden: {
-    opacity: 0,
-    scale: 0.97,
-    filter: "blur(4px)",
-  },
-};
-
 export default function AppShell({ children }: AppShellProps) {
   const pathname = usePathname();
   const router = useRouter();
 
   const { user, logout } = useAuth();
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [accountOpen, setAccountOpen] = useState(false);
 
-  /**
-   * Restore sidebar state.
-   */
+  const dispatch = useAppDispatch();
+  const sidebarOpen = useAppSelector((state) => state.sidebar.sidebarOpen);
+
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        document.body.style.overflow = "";
+      } else if (!sidebarOpen) {
+        document.body.style.overflow = "";
+      }
+    };
 
-    if (saved === null) {
-      return;
-    }
+    window.addEventListener("resize", handleResize);
 
-    queueMicrotask(() => {
-      setSidebarOpen(saved === "true");
-    });
-  }, []);
-
-  /**
-   * Persist sidebar state.
-   */
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, String(sidebarOpen));
-  }, [sidebarOpen]);
-
-  /**
-   * Lock mobile scrolling while sidebar is open.
-   */
-  useEffect(() => {
-    if (sidebarOpen && window.innerWidth < 1024) {
-      document.body.style.overflow = "hidden";
-    } else {
+    return () => {
+      window.removeEventListener("resize", handleResize);
       document.body.style.overflow = "";
-    }
+    };
+  }, [dispatch, sidebarOpen]);
+
+  useEffect(() => {
+    document.body.style.overflow =
+      sidebarOpen && window.innerWidth < 768 ? "hidden" : "";
 
     return () => {
       document.body.style.overflow = "";
@@ -113,28 +90,9 @@ export default function AppShell({ children }: AppShellProps) {
     );
   }, [user]);
 
-  function openSidebar() {
-    setSidebarOpen(true);
-  }
-
-  function closeSidebar() {
-    setSidebarOpen(false);
-    setAccountOpen(false);
-  }
-
-  function handleNavigation() {
-    setAccountOpen(false);
-
-    if (window.innerWidth < 768) {
-      setTimeout(() => {
-        setSidebarOpen(false);
-      }, 200);
-    }
-  }
-
   async function handleLogout() {
     setAccountOpen(false);
-    setSidebarOpen(false);
+    dispatch(setSidebarOpen(false));
 
     await logout();
 
@@ -149,20 +107,15 @@ export default function AppShell({ children }: AppShellProps) {
       {/* SIDEBAR                                                       */}
       {/* ============================================================ */}
 
-      {sidebarOpen && (
+      {/* {sidebarOpen && (
         <div
           className="md:hidden fixed inset-0 backdrop-blur-md bg-black/50 ease-out duration-300 data-closed:opacity-0 transition-opacity"
           aria-hidden="true"
         />
-      )}
+      )} */}
 
       <Sidebar
         data={visibleNavigation}
-        pathname={pathname}
-        user={user}
-        open={sidebarOpen}
-        onClose={closeSidebar}
-        onNavigation={handleNavigation}
         onAccountClick={() => setAccountOpen(true)}
       />
 
@@ -172,7 +125,7 @@ export default function AppShell({ children }: AppShellProps) {
 
       <div
         className={[
-          "min-h-screen h-full",
+          "min-h-dvh h-full",
           "transition-[margin-left]",
           "duration-650",
           "ease-[cubic-bezier(0.22,1,0.36,1)]",
@@ -180,109 +133,17 @@ export default function AppShell({ children }: AppShellProps) {
         ].join(" ")}
       >
         {/* ======================================================== */}
-        {/* HEADER                                                     */}
-        {/* ======================================================== */}
-
-        <header className="sticky top-0 z-30 flex h-16 items-center px-4 md:px-8 lg:px-10">
-          {/* Header background */}
-          <div
-            aria-hidden="true"
-            className="pointer-events-none fixed left-0 top-0 z-10 h-20 w-full"
-          >
-            <div className="gradient-blur dark:hidden">
-              <div />
-              <div />
-              <div />
-              <div />
-              <div />
-              <div />
-            </div>
-
-            <div className="gradient-blur-dark hidden dark:block">
-              <div />
-              <div />
-              <div />
-              <div />
-              <div />
-              <div />
-            </div>
-          </div>
-
-          {/* Open sidebar button */}
-          <motion.div
-            animate={{
-              width: sidebarOpen ? 0 : 40,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="relative z-10 shrink-0"
-          >
-            <motion.button
-              type="button"
-              onClick={openSidebar}
-              aria-label="Open sidemenu"
-              title="Open sidemenu"
-              initial={{
-                opacity: 0,
-                scale: 0.9,
-              }}
-              animate={{
-                opacity: sidebarOpen ? 0 : 1,
-                scale: sidebarOpen ? 0.9 : 1,
-              }}
-              transition={{
-                duration: 0.2,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              whileTap={{
-                scale: 1.1,
-              }}
-              className={[
-                "liquid-glass",
-                "flex size-11 shrink-0 cursor-pointer",
-                "items-center justify-center",
-                "rounded-full",
-                "text-text",
-              ].join(" ")}
-            >
-              <Icon name="thumbnail_bar" />
-            </motion.button>
-          </motion.div>
-
-          {/* Page title */}
-          <motion.h1
-            key={`${pathname}-${sidebarOpen}`}
-            variants={titleVariants}
-            initial="hidden"
-            animate="visible"
-            transition={{
-              duration: 1.5,
-              delay: 0.12,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className={[
-              !sidebarOpen ? "ml-4" : "",
-              "relative z-10 text-lg font-semibold",
-            ].join(" ")}
-          >
-            {currentPage?.label ?? ""}
-          </motion.h1>
-        </header>
-
-        {/* ======================================================== */}
         {/* CONTENT                                                    */}
         {/* ======================================================== */}
 
-        <main className="p-4 md:p-8 lg:p-10">
+        <main className="p-4 pt-0 md:p-8 md:pt-0 lg:p-10 lg:pt-0">
           <Modal
             open={accountOpen}
             onClose={() => setAccountOpen(false)}
             title="Sign Out"
             description="Are you sure you want to sign out?"
           >
-            <div className="flex flex-row gap-2.5">
+            <div className="flex flex-row gap-3">
               <Button
                 variant="secondary"
                 className="bg-foreground-tertiary hover:bg-foreground-tertiary"
