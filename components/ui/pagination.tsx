@@ -95,7 +95,7 @@ export function Pagination({
     const isActive = pageNumber === currentPage;
 
     return [
-      "flex min-w-9 items-center justify-center rounded-xl px-3 py-2",
+      "flex min-w-9 items-center justify-center rounded-xl px-4 py-2",
       "text-sm transition-colors duration-200",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
       "disabled:cursor-not-allowed disabled:opacity-40",
@@ -106,12 +106,12 @@ export function Pagination({
   };
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-6">
       {/* Record information and page size */}
-      <div className="flex flex-wrap items-center gap-4 text-sm text-text-secondary">
+      <div className="flex items-center justify-between text-text-secondary">
         <p aria-live="polite" aria-atomic="true">
           Showing <span className="font-medium text-text">{start}</span>
-          {" - "}
+          {" — "}
           <span className="font-medium text-text">{end}</span>
           {" of "}
           <span className="font-medium text-text">{safeTotal}</span>
@@ -119,34 +119,34 @@ export function Pagination({
         </p>
 
         {onPageSizeChange && (
-          <div className="flex items-center gap-2">
-            <span>Rows:</span>
+          <div className="w-18">
+            <Select
+              animation="list"
+              className="p-1.5! pl-2.5! h-10!"
+              name="pageSize"
+              value={String(safePageSize)}
+              onChange={(value) => {
+                const nextPageSize = Number(value);
 
-            <div className="w-24">
-              <Select
-                animation="list"
-                className="p-1.5! pl-2.5!"
-                name="pageSize"
-                value={String(safePageSize)}
-                onChange={(value) => {
-                  const nextPageSize = Number(value);
-
-                  if (Number.isFinite(nextPageSize) && nextPageSize > 0) {
-                    onPageSizeChange(nextPageSize);
-                  }
-                }}
-                options={normalizedPageSizeOptions.map((size) => ({
-                  label: String(size),
-                  value: String(size),
-                }))}
-                disabled={disabled}
-              />
-            </div>
+                if (Number.isFinite(nextPageSize) && nextPageSize > 0) {
+                  onPageSizeChange(nextPageSize);
+                }
+              }}
+              options={normalizedPageSizeOptions.map((size) => ({
+                label: String(size),
+                value: String(size),
+              }))}
+              disabled={disabled}
+            />
           </div>
         )}
       </div>
 
-      <nav aria-label="Pagination" className="flex items-center gap-4">
+      {/* Page numbers */}
+      <nav
+        aria-label="Pagination"
+        className="flex items-center justify-end gap-4"
+      >
         <ActionButton
           iconClassName="pr-0.5"
           icon="arrow_back_ios_new"

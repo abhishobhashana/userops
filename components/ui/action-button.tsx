@@ -27,7 +27,7 @@ type ActionButtonProps =
 
 const baseClassName = [
   "liquid-glass",
-  "inline-flex shrink-0 items-center justify-center size-11 cursor-pointer",
+  "inline-flex shrink-0 items-center justify-center size-12 cursor-pointer",
   "rounded-full text-text",
   "transform-gpu touch-manipulation",
   "transition-transform duration-200 ease-out",
@@ -43,7 +43,7 @@ export default function ActionButton(props: ActionButtonProps) {
   const {
     iconClassName,
     icon,
-    size = 20,
+    size = 24,
     label,
     className = "",
     href,

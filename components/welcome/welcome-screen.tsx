@@ -65,7 +65,11 @@ export function WelcomeScreen() {
       >
         <div className="flex min-h-[min(720px,calc(100dvh-72px))] flex-col p-6 pt-0 max-sm:min-h-[calc(100dvh-24px)] lg:pt-0">
           <header className="my-auto text-center">
-            <Icon name="manage_accounts" size={52} className="text-accent" />
+            <Icon
+              name="manage_accounts"
+              size={52}
+              className="text-text-secondary"
+            />
 
             <h1
               id="welcome-title"

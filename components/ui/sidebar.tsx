@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
+
 import Icon from "./icon";
+import { useAuth } from "@/components/auth/auth-provider";
+import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { setSidebarOpen, toggleSidebar } from "@/lib/features/sidebarSlice";
 
 interface SidebarItem {
   label: string;
@@ -10,19 +15,8 @@ interface SidebarItem {
   icon: string;
 }
 
-interface SidebarUser {
-  first_name?: string;
-  last_name?: string;
-  email?: string;
-}
-
 interface SidebarProps {
   data: SidebarItem[];
-  pathname: string;
-  user: SidebarUser | null;
-  open: boolean;
-  onClose: () => void;
-  onNavigation: () => void;
   onAccountClick: () => void;
 }
 
@@ -33,23 +27,26 @@ const sidebarTransition = {
   mass: 1.15,
 };
 
-export default function Sidebar({
-  data,
-  pathname,
-  user,
-  open,
-  onClose,
-  onNavigation,
-  onAccountClick,
-}: SidebarProps) {
+export default function Sidebar({ data, onAccountClick }: SidebarProps) {
+  const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const sidebarOpen = useAppSelector((state) => state.sidebar.sidebarOpen);
+  const { user } = useAuth();
+
   const initials =
     `${user?.first_name?.charAt(0) ?? ""}${user?.last_name?.charAt(0) ?? ""}`.toUpperCase() ||
     "-";
 
+  function handleNavigation() {
+    if (window.innerWidth < 768) {
+      dispatch(setSidebarOpen(false));
+    }
+  }
+
   return (
     <>
       <AnimatePresence>
-        {open && (
+        {sidebarOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -58,7 +55,7 @@ export default function Sidebar({
               duration: 0.3,
               ease: [0.22, 1, 0.36, 1],
             }}
-            onClick={onClose}
+            onClick={() => dispatch(setSidebarOpen(false))}
             className="fixed inset-0 z-40 bg-black/10 backdrop-blur-xl md:hidden"
           />
         )}
@@ -67,35 +64,35 @@ export default function Sidebar({
       <motion.aside
         initial={false}
         animate={{
-          x: open ? 0 : "-110%",
+          x: sidebarOpen ? 0 : "-110%",
         }}
         transition={sidebarTransition}
         className={[
-          "liquid-glass",
+          "md-liquid-glass",
           "fixed inset-0 z-50",
           "md:left-3 md:top-3 right-auto md:bottom-3",
           "h-auto",
           "w-full md:w-76",
           "md:rounded-3xl",
-          "backdrop-blur-xl",
+          "bg-background backdrop-blur-xl",
         ].join(" ")}
       >
         <div className="flex h-full flex-col">
           {/* Header */}
           <div className="flex shrink-0 items-center p-4.5 md:p-2 md:pl-4.5">
-            <Link
-              href="/analytics"
-              onClick={onNavigation}
-              className="font-medium"
-            >
-              <Icon name="manage_accounts" size={26} className="text-accent" />
+            <Link href="/analytics" onClick={handleNavigation}>
+              <Icon
+                name="manage_accounts"
+                size={26}
+                className="text-text-secondary"
+              />
             </Link>
 
             <AnimatePresence>
-              {open && (
+              {sidebarOpen && (
                 <motion.button
                   type="button"
-                  onClick={onClose}
+                  onClick={() => dispatch(toggleSidebar())}
                   aria-label="Close sidemenu"
                   title="Close sidemenu"
                   initial={{
@@ -117,7 +114,7 @@ export default function Sidebar({
                   whileTap={{
                     scale: 1.1,
                   }}
-                  className="ml-auto liquid-glass size-11 flex cursor-pointer items-center justify-center rounded-3xl text-text"
+                  className="ml-auto liquid-glass size-12 flex cursor-pointer items-center justify-center rounded-3xl text-text"
                 >
                   <Icon name="thumbnail_bar" />
                 </motion.button>
@@ -137,7 +134,7 @@ export default function Sidebar({
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={onNavigation}
+                  onClick={handleNavigation}
                   className={[
                     "flex items-center gap-2.5",
                     "rounded-xl px-3 py-1.5",
@@ -147,15 +144,9 @@ export default function Sidebar({
                     active ? "bg-background-tertiary" : "",
                   ].join(" ")}
                 >
-                  <Icon
-                    name={item.icon}
-                    size={24}
-                    className={active ? "text-accent" : "text-foreground"}
-                  />
+                  <Icon name={item.icon} className="text-accent" />
 
-                  <span className={active ? "text-accent" : "text-foreground"}>
-                    {item.label}
-                  </span>
+                  <span className="text-foreground">{item.label}</span>
                 </Link>
               );
             })}
@@ -176,15 +167,16 @@ export default function Sidebar({
                 "active:opacity-70",
               ].join(" ")}
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-background-tertiary font-semibold">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-background-tertiary font-semibold">
                 {initials}
               </div>
 
-              <div className="min-w-0 flex-1 font-medium">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm">
-                  {user ? `${user.first_name} ${user.last_name}` : "User"}
+                  {user
+                    ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
+                    : "User"}
                 </p>
-
                 <p className="mt-0.5 truncate text-xs text-text-secondary">
                   {user?.email ?? "Account"}
                 </p>
