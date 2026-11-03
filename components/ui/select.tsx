@@ -73,7 +73,7 @@ export default function Select({
             }
             className={`${className} flex w-full items-center ${
               iconOnly ? "justify-center" : "justify-between"
-            } gap-2 rounded-3xl bg-background-secondary size-12 px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-background-tertiary disabled:text-text-quaternary ${
+            } gap-2 rounded-3xl bg-background-secondary size-11.5 px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-background-tertiary disabled:text-text-quaternary ${
               error ? "border border-red" : ""
             }`}
           >
@@ -130,11 +130,7 @@ export default function Select({
                   />
 
                   {option.icon && (
-                    <Icon
-                      name={option.icon}
-                      size={20}
-                      className="shrink-0 pr-1"
-                    />
+                    <Icon name={option.icon} className="shrink-0 pr-1" />
                   )}
 
                   <span className="min-w-0 flex-1 truncate">

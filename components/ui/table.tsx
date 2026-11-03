@@ -31,8 +31,8 @@ export function Table<T>({
 }: TableProps<T>) {
   return (
     <div className="w-full max-w-7xl overflow-x-auto rounded-3xl bg-background-secondary p-3 pt-0">
-      <table className="w-full max-w-7xl overflow-x-auto border-collapse text-left">
-        <thead className="bg-background-secondary relative after:absolute after:bottom-0 after:-left-3 after:-right-3 after:h-px after:bg-border">
+      <table className="w-full md:max-w-7xl max-w-4xl overflow-x-auto border-collapse text-left">
+        <thead className="bg-background-secondary border-b border-border">
           <tr>
             {columns.map((column, index) => (
               <th
@@ -77,7 +77,7 @@ export function Table<T>({
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={`whitespace-nowrap first:rounded-l-xl last:rounded-r-xl px-3 py-1.5 text-text-secondary ${
+                    className={`whitespace-nowrap first:text-text first:font-medium first:rounded-l-xl last:rounded-r-xl px-3 py-1.5 text-text-secondary ${
                       column.align === "end"
                         ? "text-right"
                         : column.align === "center"

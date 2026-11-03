@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useAuth } from "@/components/auth/auth-provider";
@@ -41,7 +41,6 @@ const navigation = [
 ];
 
 export default function AppShell({ children }: AppShellProps) {
-  const pathname = usePathname();
   const router = useRouter();
 
   const { user, logout } = useAuth();
@@ -98,8 +97,6 @@ export default function AppShell({ children }: AppShellProps) {
 
     router.replace("/auth/login");
   }
-
-  const currentPage = navigation.find((item) => item.href === pathname);
 
   return (
     <div className="min-h-screen bg-background text-foreground">

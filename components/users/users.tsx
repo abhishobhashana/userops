@@ -31,7 +31,7 @@ const STATUS_STYLES: Record<UserStatus, string> = {
 };
 
 export default function Users({ initialUsers }: UsersProps) {
-  const [users, setUsers] = useState<UserRow[]>(initialUsers);
+  const users = initialUsers;
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -71,8 +71,8 @@ export default function Users({ initialUsers }: UsersProps) {
   }, [filteredUsers, currentPage, pageSize]);
 
   const roleIcons: Record<string, string> = {
-    SUPER_ADMIN: "admin_panel_settings",
-    ADMIN: "shield_person",
+    SUPER_ADMIN: "shield_person",
+    ADMIN: "admin_panel_settings",
     MANAGER: "badge",
     USER: "person",
   };
@@ -122,7 +122,7 @@ export default function Users({ initialUsers }: UsersProps) {
       header: "Name",
       render: (user) =>
         user.first_name && user.last_name ? (
-          <p className="text-text font-medium">
+          <p>
             {user.first_name} {user.last_name}
           </p>
         ) : (

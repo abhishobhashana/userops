@@ -17,6 +17,7 @@ export function SmoothScroll() {
       autoRaf: true,
       smoothWheel: true,
       anchors: true,
+      prevent: (node) => node.classList.contains("chart-scroll"),
     });
 
     return () => {

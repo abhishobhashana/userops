@@ -82,7 +82,7 @@ export default function Header({ title, subtitle, children }: HeaderProps) {
           }}
           className={[
             "liquid-glass",
-            "flex size-12 shrink-0 cursor-pointer",
+            "flex size-11 shrink-0 cursor-pointer",
             "items-center justify-center",
             "rounded-full",
             "text-text",

@@ -234,13 +234,6 @@ function EditProfileModal({
   >({});
 
   const toast = useToast();
-  useEffect(() => {
-    if (!field) return;
-
-    setValue(initialValue);
-    setError(null);
-    setFieldErrors({});
-  }, [field, initialValue]);
 
   const fieldConfig = field
     ? {
@@ -483,6 +476,7 @@ export default function ProfileInformation() {
       <ProfileSection user={user} onEdit={handleEdit} />
 
       <EditProfileModal
+        key={displayField ?? "closed"}
         user={user}
         field={displayField}
         open={editingField !== null}
