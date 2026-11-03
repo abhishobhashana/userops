@@ -67,12 +67,16 @@ export function Modal({
               ].join(" ")}
             >
               {(title || description) && (
-                <div className="flex flex-col gap-4 p-7">
+                <div className="flex flex-col gap-3.5 p-7">
                   {title && (
                     <DialogTitle className="font-semibold">{title}</DialogTitle>
                   )}
 
-                  {description && <Description>{description}</Description>}
+                  {description && (
+                    <Description aria-label="modal-description">
+                      {description}
+                    </Description>
+                  )}
                 </div>
               )}
 

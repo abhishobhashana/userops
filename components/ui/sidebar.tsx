@@ -81,11 +81,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
           {/* Header */}
           <div className="flex shrink-0 items-center p-4.5 md:p-2 md:pl-4.5">
             <Link href="/analytics" onClick={handleNavigation}>
-              <Icon
-                name="manage_accounts"
-                size={26}
-                className="text-text-secondary"
-              />
+              <h2 className="text-xl font-semibold">UserOps</h2>
             </Link>
 
             <AnimatePresence>
@@ -114,7 +110,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
                   whileTap={{
                     scale: 1.1,
                   }}
-                  className="ml-auto liquid-glass size-12 flex cursor-pointer items-center justify-center rounded-3xl text-text"
+                  className="ml-auto liquid-glass size-11 flex cursor-pointer items-center justify-center rounded-3xl text-text"
                 >
                   <Icon name="thumbnail_bar" />
                 </motion.button>
@@ -125,7 +121,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
           {/* Navigation */}
           <nav
             aria-label="Navigation"
-            className="mt-5 flex flex-col gap-1 p-4.5 pt-0"
+            className="mt-5 flex flex-col gap-0.5 p-4.5 pt-0"
           >
             {data.map((item) => {
               const active = pathname === item.href;
@@ -144,7 +140,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
                     active ? "bg-background-tertiary" : "",
                   ].join(" ")}
                 >
-                  <Icon name={item.icon} className="text-accent" />
+                  <Icon name={item.icon} className="text-accent" size={28} />
 
                   <span className="text-foreground">{item.label}</span>
                 </Link>

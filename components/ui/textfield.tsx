@@ -59,7 +59,7 @@ export default function Textfield({
       <div className="relative">
         {searchable && (
           <span className="z-1 absolute left-3 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center pointer-events-none">
-            <Icon name="search" size={22} />
+            <Icon name="search" size={24} />
           </span>
         )}
 
@@ -80,7 +80,7 @@ export default function Textfield({
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
             className,
-            "w-full rounded-3xl bg-background-secondary size-12 px-4 py-3",
+            "w-full rounded-3xl bg-background-secondary size-11 px-4 py-3",
             "text-text outline-none",
             "placeholder:text-text-secondary",
             "transition-[border-color,box-shadow]! duration-200!",
@@ -117,7 +117,7 @@ export default function Textfield({
           >
             <Icon
               name="visibility_lock"
-              size={22}
+              size={24}
               className={[
                 "absolute transition-all duration-300 ease-out",
                 showPassword
@@ -128,7 +128,7 @@ export default function Textfield({
 
             <Icon
               name="visibility"
-              size={22}
+              size={24}
               className={[
                 "absolute transition-all duration-300 ease-out",
                 showPassword
