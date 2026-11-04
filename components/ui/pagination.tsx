@@ -162,7 +162,7 @@ export function Pagination({
                 <span
                   key={item}
                   aria-hidden="true"
-                  className="flex h-9 min-w-5 items-center justify-center text-text-quaternary"
+                  className="flex min-w-6 items-center justify-center text-text-quaternary"
                 >
                   &hellip;
                 </span>

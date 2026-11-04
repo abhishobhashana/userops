@@ -8,7 +8,7 @@ type IconProps = {
 
 export default function Icon({
   name,
-  size = 22,
+  size = 23,
   fill = false,
   weight = 300,
   className = "",

@@ -110,7 +110,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
                   whileTap={{
                     scale: 1.1,
                   }}
-                  className="ml-auto liquid-glass size-11 flex cursor-pointer items-center justify-center rounded-3xl text-text"
+                  className="ml-auto liquid-glass size-12 flex cursor-pointer items-center justify-center rounded-3xl text-text"
                 >
                   <Icon name="thumbnail_bar" />
                 </motion.button>
@@ -168,7 +168,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
               </div>
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm">
+                <p className="truncate text-sm font-medium">
                   {user
                     ? `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim()
                     : "User"}

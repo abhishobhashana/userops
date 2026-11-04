@@ -80,7 +80,7 @@ export default function Textfield({
           aria-describedby={error ? `${id}-error` : undefined}
           className={[
             className,
-            "w-full rounded-3xl bg-background-secondary size-11 px-4 py-3",
+            "w-full rounded-3xl bg-background-secondary size-12 px-4 py-3",
             "text-text outline-none",
             "placeholder:text-text-secondary",
             "transition-[border-color,box-shadow]! duration-200!",

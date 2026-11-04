@@ -150,9 +150,7 @@ export default function Users({ initialUsers }: UsersProps) {
       key: "status",
       header: "Status",
       render: (user) => (
-        <p
-          className={`${STATUS_STYLES[user.status] ?? "text-text-secondary"} font-medium capitalize`}
-        >
+        <p className={`${STATUS_STYLES[user.status] ?? "text-text-secondary"}`}>
           {user.status.charAt(0).toUpperCase() +
             user.status.slice(1).toLowerCase()}
         </p>
@@ -198,7 +196,7 @@ export default function Users({ initialUsers }: UsersProps) {
               setSearch("");
               setPage(1);
             }}
-            className="liquid-glass"
+            className="liquid-glass size-11"
           />
 
           <div className="flex gap-2.5">
