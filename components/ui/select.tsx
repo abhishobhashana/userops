@@ -73,7 +73,7 @@ export default function Select({
             }
             className={`${className} flex w-full items-center ${
               iconOnly ? "justify-center" : "justify-between"
-            } gap-2 rounded-3xl bg-background-secondary size-11.5 px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-background-tertiary disabled:text-text-quaternary ${
+            } gap-2 rounded-3xl bg-background-secondary size-12 px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-background-tertiary disabled:text-text-quaternary ${
               error ? "border border-red" : ""
             }`}
           >
@@ -108,7 +108,7 @@ export default function Select({
           <ListboxOptions
             anchor={iconOnly || animation === "list" ? "bottom end" : "bottom"}
             transition
-            className={`z-50 mt-1.5 max-h-60 w-(--button-width) overflow-auto rounded-3xl border-y-2 border-border bg-background-secondary/50 p-2.5 shadow-xl backdrop-blur-sm outline-none transition-[opacity,transform,scale] duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] data-closed:scale-0 data-closed:opacity-80 data-closed:translate-x-0 data-closed:translate-y-0 ${
+            className={`z-50 mt-1.5 max-h-60 w-(--button-width) overflow-auto liquid-glass rounded-3xl p-2.5 outline-none transition-[opacity,transform,scale]! duration-600 ease-[cubic-bezier(0.16,1,0.3,1)] data-closed:scale-0 data-closed:opacity-80 data-closed:translate-x-0 data-closed:translate-y-0 ${
               iconOnly || animation === "list"
                 ? "origin-top-right"
                 : "origin-top"
