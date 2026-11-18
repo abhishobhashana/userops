@@ -110,7 +110,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
                   whileTap={{
                     scale: 1.1,
                   }}
-                  className="ml-auto liquid-glass size-12 flex cursor-pointer items-center justify-center rounded-3xl text-text"
+                  className="ml-auto liquid-glass size-11.5 flex cursor-pointer items-center justify-center rounded-3xl text-text"
                 >
                   <Icon name="thumbnail_bar" />
                 </motion.button>
@@ -133,7 +133,7 @@ export default function Sidebar({ data, onAccountClick }: SidebarProps) {
                   onClick={handleNavigation}
                   className={[
                     "flex items-center gap-2.5",
-                    "rounded-xl px-3 py-1.5",
+                    "rounded-xl px-3 py-1",
                     "font-medium",
                     "transition-colors duration-200",
                     "text-foreground-secondary",

@@ -7,6 +7,7 @@ import Select from "@/components/ui/select";
 import Loader from "@/components/ui/loader";
 import ActivityTimeline from "@/components/ui/activity-timeline";
 import { Pagination } from "@/components/ui/pagination";
+
 import {
   getActivity,
   type ActivityEvent,
@@ -14,6 +15,8 @@ import {
   type ActivityRange,
 } from "@/lib/api/activity";
 import type { UserRole } from "@/lib/auth/types";
+import PageAnimation from "../ui/page-animation";
+import { useAppSelector } from "@/lib/hooks";
 
 const ranges = [
   { label: "Last 7 days", value: "7d" },
@@ -23,6 +26,8 @@ const ranges = [
 ];
 
 export default function Activity({ role }: { role: UserRole }) {
+  const isSidebarOpen = useAppSelector((state) => state.sidebar.sidebarOpen);
+
   const [range, setRange] = useState<ActivityRange>("30d");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -91,6 +96,7 @@ export default function Activity({ role }: { role: UserRole }) {
       >
         {role !== "USER" && (
           <Select
+            animation="list"
             value={selectedUser}
             onChange={(value) => {
               setLoading(true);
@@ -106,11 +112,13 @@ export default function Activity({ role }: { role: UserRole }) {
             ]}
             placeholder="All users"
             name="activityUser"
-            className="liquid-glass"
-            optionsClassName="w-64!"
+            className={`liquid-glass hidden ${isSidebarOpen ? "md:hidden" : "md:flex"} lg:flex`}
+            optionsClassName="w-92! backdrop-blur-sm!"
           />
         )}
+
         <Select
+          animation="list"
           value={range}
           onChange={(value) => {
             setLoading(true);
@@ -125,84 +133,107 @@ export default function Activity({ role }: { role: UserRole }) {
         />
       </Header>
 
-      <section className="mx-auto w-full max-w-3xl space-y-8">
-        {error && events.length === 0 ? (
-          <div
-            role="alert"
-            className="rounded-2xl bg-background-secondary p-6 text-center"
-          >
-            <p className="text-sm text-red">{error}</p>
-            <button
-              type="button"
-              onClick={() => {
-                setLoading(true);
-                void loadActivity();
-              }}
-              className="mt-3 text-sm font-semibold text-accent"
-            >
-              Try again
-            </button>
-          </div>
-        ) : loading && events.length === 0 ? (
-          <div className="h-[calc(100vh-12rem)] flex items-center justify-center">
-            <Loader size="md" />
-          </div>
-        ) : (
-          <div className="relative">
+      <section className="mx-auto w-full max-w-3xl">
+        <PageAnimation>
+          {error && events.length === 0 ? (
             <div
-              className={`transition-opacity duration-300 ease-out ${loading ? "pointer-events-none opacity-50" : "opacity-100"}`}
+              role="alert"
+              className="rounded-2xl bg-background-secondary p-6 text-center"
             >
-              <h2 className="font-semibold text-text-secondary">
-                {roleTitle[role]}
-              </h2>
-              <p className="mb-6 text-sm font-medium text-text-tertiary">
-                Audit events from{" "}
-                {ranges
-                  .find((item) => item.value === range)
-                  ?.label.toLowerCase()}
-                .
-              </p>
-
-              <ActivityTimeline events={events} />
-            </div>
-            {loading && events.length > 0 && (
-              <div
-                className="pointer-events-none absolute right-4 top-4 rounded-full bg-background-secondary/90 p-2 shadow-sm"
-                aria-label="Updating activity"
+              <p className="text-sm text-red">{error}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setLoading(true);
+                  void loadActivity();
+                }}
+                className="mt-3 text-sm font-semibold text-accent"
               >
-                <Loader size="sm" />
+                Try again
+              </button>
+            </div>
+          ) : loading && events.length === 0 ? (
+            <div className="h-[calc(100vh-12rem)] flex items-center justify-center">
+              <Loader size="md" />
+            </div>
+          ) : loading && events.length > 0 ? (
+            <div
+              className="pointer-events-none h-[calc(100vh-10rem)] w-full flex items-center justify-center"
+              aria-label="Updating activity"
+            >
+              <Loader size="md" />
+            </div>
+          ) : (
+            <div className="relative space-y-8">
+              <div
+                className={`transition-opacity duration-300 ease-out ${loading ? "pointer-events-none opacity-50" : "opacity-100"}`}
+              >
+                <div className="flex items-end justify-between mb-2">
+                  <h2 className="px-4 font-semibold text-text-secondary">
+                    {roleTitle[role]}
+                  </h2>
+
+                  {role !== "USER" && (
+                    <Select
+                      animation="list"
+                      value={selectedUser}
+                      onChange={(value) => {
+                        setLoading(true);
+                        setSelectedUser(value);
+                        setPage(1);
+                      }}
+                      options={[
+                        { label: "All Users", value: "ALL" },
+                        ...users.map((user) => ({
+                          label: `${user.name} — ${user.role.replaceAll("_", " ")}`,
+                          value: user.id,
+                        })),
+                      ]}
+                      placeholder="All users"
+                      name="activityUser"
+                      className={`liquid-glass flex ${isSidebarOpen ? "md:flex" : "md:hidden"} lg:hidden`}
+                      optionsClassName="w-92! backdrop-blur-sm!"
+                    />
+                  )}
+                </div>
+
+                <ActivityTimeline
+                  events={events}
+                  isSidebarOpen={isSidebarOpen}
+                />
               </div>
-            )}
-            {error && (
-              <p role="alert" className="mt-3 text-sm text-red">
-                {error}
-              </p>
-            )}
-          </div>
-        )}
 
-        <Pagination
-          page={page}
-          pageSize={pageSize}
-          total={total}
-          onPageChange={(nextPage) => {
-            setLoading(true);
-            setPage(nextPage);
+              {error && (
+                <p role="alert" className="mt-3 text-sm text-red">
+                  {error}
+                </p>
+              )}
 
-            setTimeout(() => {
-              window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-              });
-            }, 300);
-          }}
-          onPageSizeChange={(size) => {
-            setLoading(true);
-            setPageSize(size);
-            setPage(1);
-          }}
-          disabled={loading}
-        />
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                total={total}
+                onPageChange={(nextPage) => {
+                  setLoading(true);
+                  setPage(nextPage);
+
+                  setTimeout(() => {
+                    window.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    });
+                  }, 300);
+                }}
+                onPageSizeChange={(size) => {
+                  setLoading(true);
+                  setPageSize(size);
+                  setPage(1);
+                }}
+                disabled={loading}
+              />
+            </div>
+          )}
+        </PageAnimation>
       </section>
     </main>
   );

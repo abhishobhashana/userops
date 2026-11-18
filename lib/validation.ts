@@ -61,6 +61,13 @@ export const createAccountSchema = z.object({
   password: passwordSchema,
 });
 
+export const createManagedUserSchema = createAccountSchema
+  .omit({ password: true })
+  .extend({
+    role: z.enum(["ADMIN", "MANAGER", "USER"]),
+  })
+  .strict();
+
 export const recoveryCodeSchema = z.object({
   recoveryCode: z.string().trim().min(1, {
     error: "Recovery code is required",
@@ -132,6 +139,7 @@ export const changePasswordCompleteSchema = z
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateAccountInput = z.infer<typeof createAccountSchema>;
+export type CreateManagedUserInput = z.infer<typeof createManagedUserSchema>;
 export type RecoveryCodeInput = z.infer<typeof recoveryCodeSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
