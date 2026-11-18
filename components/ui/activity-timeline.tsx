@@ -82,8 +82,10 @@ function describeEvent(event: ActivityEvent) {
 
 export default function ActivityTimeline({
   events,
+  isSidebarOpen,
 }: {
   events: ActivityEvent[];
+  isSidebarOpen: boolean;
 }) {
   if (events.length === 0) {
     return (
@@ -108,7 +110,7 @@ export default function ActivityTimeline({
 
             {/* Content */}
             <div
-              className={`flex flex-1 max-w-3xl justify-between py-3 ${
+              className={`flex flex-col ${isSidebarOpen ? "md:flex-col" : "md:flex-row"} lg:flex-row flex-1 max-w-3xl justify-between py-3 ${
                 index !== events.length - 1 ? "border-b border-border" : ""
               }`}
             >

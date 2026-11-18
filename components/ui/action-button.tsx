@@ -27,7 +27,7 @@ type ActionButtonProps =
 
 const baseClassName = [
   "liquid-glass",
-  "inline-flex shrink-0 items-center justify-center size-12 cursor-pointer",
+  "inline-flex shrink-0 items-center justify-center size-11.5 cursor-pointer",
   "rounded-full text-text",
   "transform-gpu touch-manipulation",
   "transition-transform duration-200 ease-out",

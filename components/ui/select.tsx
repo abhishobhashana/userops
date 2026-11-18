@@ -50,12 +50,8 @@ export default function Select({
   const selectedOption = options.find((option) => option.value === value);
 
   return (
-    <>
-      {label && (
-        <label className="mb-1.5 block text-sm font-medium text-text-quaternary">
-          {label}
-        </label>
-      )}
+    <div data-auth-animation className="space-y-2">
+      {label && <label className="px-4 block text-foreground">{label}</label>}
 
       <Listbox
         value={value}
@@ -73,7 +69,7 @@ export default function Select({
             }
             className={`${className} flex w-full items-center ${
               iconOnly ? "justify-center" : "justify-between"
-            } gap-2 rounded-3xl bg-background-secondary size-12 px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-background-tertiary disabled:text-text-quaternary ${
+            } gap-2 rounded-3xl bg-background-secondary size-11.5 px-4 py-3 text-left outline-none transition focus-visible:ring-2 focus-visible:ring-accent disabled:cursor-not-allowed disabled:bg-background-tertiary disabled:text-text-quaternary ${
               error ? "border border-red" : ""
             }`}
           >
@@ -152,6 +148,6 @@ export default function Select({
           {error}
         </p>
       )}
-    </>
+    </div>
   );
 }

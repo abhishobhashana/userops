@@ -5,16 +5,20 @@ import { useMemo, useState } from "react";
 import { Table } from "@/components/ui/table";
 import { Pagination } from "@/components/ui/pagination";
 import type { TableColumn } from "@/components/ui/table";
-
 import Textfield from "../ui/textfield";
 import Select, { type SelectOption } from "../ui/select";
-
-import type { UserRow, UserRole, UserStatus } from "@/lib/api/users";
 import Header from "../ui/header";
 import ActionButton from "../ui/action-button";
+import PageAnimation from "../ui/page-animation";
+import CreateUserModal from "./create-user-modal";
+
+import type { UserRow, UserRole, UserStatus } from "@/lib/api/users";
+import { USER_ROLES } from "@/lib/auth/types";
+import { canManageRole } from "@/lib/auth/permissions";
 
 interface UsersProps {
   initialUsers: UserRow[];
+  role: UserRole;
 }
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -30,8 +34,9 @@ const STATUS_STYLES: Record<UserStatus, string> = {
   SUSPENDED: "text-red",
 };
 
-export default function Users({ initialUsers }: UsersProps) {
-  const users = initialUsers;
+export default function Users({ initialUsers, role }: UsersProps) {
+  const [users, setUsers] = useState<UserRow[]>(initialUsers);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -96,6 +101,11 @@ export default function Users({ initialUsers }: UsersProps) {
     { label: "Invited", value: "INVITED", icon: "person_add" },
     { label: "Suspended", value: "SUSPENDED", icon: "person_off" },
   ];
+
+  const creatableRoles = USER_ROLES.filter(
+    (candidate) =>
+      candidate !== "SUPER_ADMIN" && canManageRole(role, candidate),
+  );
 
   function formatLastLogin(lastLoginAt?: string | null) {
     if (!lastLoginAt) return "Never";
@@ -171,93 +181,109 @@ export default function Users({ initialUsers }: UsersProps) {
   return (
     <main className="space-y-8">
       <Header title="Users" subtitle={`${users.length} — Users`}>
-        <ActionButton
-          icon="add_2"
-          label="Add User"
-          onClick={() => {}}
-          disabled
-        />
+        {creatableRoles.length > 0 && (
+          <ActionButton
+            icon="add_2"
+            label="Add User"
+            onClick={() => setIsCreateModalOpen(true)}
+          />
+        )}
       </Header>
 
-      <section className="mx-auto w-full max-w-7xl space-y-8">
-        <div className="flex justify-between gap-2.5">
-          <Textfield
-            label=""
-            aria-label="Search users"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            placeholder="Search"
-            searchable
-            clearable
-            onClear={() => {
-              setSearch("");
-              setPage(1);
-            }}
-            className="liquid-glass size-11"
+      <CreateUserModal
+        open={isCreateModalOpen}
+        allowedRoles={creatableRoles}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreated={(user) => {
+          setUsers((current) => [user, ...current]);
+          setSearch("");
+          setRoleFilter("ALL");
+          setStatusFilter("ALL");
+          setPage(1);
+        }}
+      />
+
+      <section className="mx-auto w-full max-w-7xl">
+        <PageAnimation className="space-y-8">
+          <div className="flex justify-between gap-2.5">
+            <Textfield
+              label=""
+              aria-label="Search users"
+              value={search}
+              onChange={(event) => {
+                setSearch(event.target.value);
+                setPage(1);
+              }}
+              placeholder="Search"
+              searchable
+              clearable
+              onClear={() => {
+                setSearch("");
+                setPage(1);
+              }}
+              className="liquid-glass"
+            />
+
+            <div className="flex gap-2.5">
+              <Select
+                value={roleFilter}
+                onChange={(value) => {
+                  setRoleFilter(value);
+                  setPage(1);
+                }}
+                options={roleOptions}
+                placeholder="All Roles"
+                name="roleFilter"
+                iconOnly
+                iconActiveBackground
+                className="w-12! liquid-glass"
+                optionsClassName="w-52!"
+              />
+
+              <Select
+                value={statusFilter}
+                onChange={(value) => {
+                  setStatusFilter(value);
+                  setPage(1);
+                }}
+                options={statusOptions}
+                placeholder="All Statuses"
+                name="statusFilter"
+                iconOnly
+                iconActiveBackground
+                className="w-12! liquid-glass"
+                optionsClassName="w-52!"
+              />
+
+              {hasActiveFilters && (
+                <ActionButton
+                  icon="close"
+                  label="Clear all filters"
+                  size={28}
+                  onClick={clearFilters}
+                />
+              )}
+            </div>
+          </div>
+
+          <Table
+            columns={columns}
+            data={pageUsers}
+            getRowKey={(user) => user.id}
+            emptyMessage="No users match your filters."
           />
 
-          <div className="flex gap-2.5">
-            <Select
-              value={roleFilter}
-              onChange={(value) => {
-                setRoleFilter(value);
-                setPage(1);
-              }}
-              options={roleOptions}
-              placeholder="All Roles"
-              name="roleFilter"
-              iconOnly
-              iconActiveBackground
-              className="w-12! liquid-glass"
-              optionsClassName="w-52!"
-            />
-
-            <Select
-              value={statusFilter}
-              onChange={(value) => {
-                setStatusFilter(value);
-                setPage(1);
-              }}
-              options={statusOptions}
-              placeholder="All Statuses"
-              name="statusFilter"
-              iconOnly
-              iconActiveBackground
-              className="w-12! liquid-glass"
-              optionsClassName="w-52!"
-            />
-
-            {hasActiveFilters && (
-              <ActionButton
-                icon="close"
-                label="Clear all filters"
-                size={28}
-                onClick={clearFilters}
-              />
-            )}
-          </div>
-        </div>
-
-        <Table
-          columns={columns}
-          data={pageUsers}
-          getRowKey={(user) => user.id}
-          emptyMessage="No users match your filters."
-        />
-
-        <Pagination
-          page={currentPage}
-          pageSize={pageSize}
-          total={filteredUsers.length}
-          onPageChange={setPage}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPage(1);
-          }}
-        />
+          <Pagination
+            page={currentPage}
+            pageSize={pageSize}
+            total={filteredUsers.length}
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(1);
+            }}
+          />
+        </PageAnimation>
       </section>
     </main>
   );

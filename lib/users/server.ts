@@ -5,6 +5,7 @@ import { requireApiRole } from "@/lib/api-auth";
 import { toPublicUser } from "@/lib/auth/user";
 import type { UserRole } from "@/lib/auth/types";
 import { User } from "@/models/User";
+import { getVisibleManagedUserIds } from "@/lib/users/ownership";
 
 const MANAGEMENT_ROLES: UserRole[] = ["SUPER_ADMIN", "ADMIN", "MANAGER"];
 
@@ -17,7 +18,12 @@ export async function getUsers() {
 
   await connectDatabase();
 
-  const users = await User.find()
+  const visibleIds = await getVisibleManagedUserIds(
+    auth.user.userId,
+    auth.user.role,
+  );
+
+  const users = await User.find(visibleIds ? { _id: { $in: visibleIds } } : {})
     .select("-passwordHash -mfa.secretEncrypted")
     .sort({ createdAt: -1 })
     .lean();

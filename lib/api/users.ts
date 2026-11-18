@@ -12,6 +12,21 @@ export interface UserRow extends PublicUser {
   lastLoginAt?: string | null;
 }
 
+export interface CreatedUserResult {
+  user: UserRow;
+  credentials: {
+    temporaryPassword: string;
+    recoveryCode: string;
+  };
+}
+
+export interface CreateUserInput {
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: UserRole;
+}
+
 type EditableProfile = Partial<
   Pick<PublicUser, "first_name" | "last_name" | "email">
 >;
@@ -25,6 +40,10 @@ export const usersApi = {
     return api.get<UserRow[]>("/api/v1/users", {
       cache: "no-store",
     });
+  },
+
+  createUser(input: CreateUserInput) {
+    return api.post<CreatedUserResult>("/api/v1/users", input);
   },
 };
 

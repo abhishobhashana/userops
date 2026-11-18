@@ -16,6 +16,7 @@ import type { AnalyticsData, AnalyticsRange } from "@/lib/api/analytics";
 
 import type { UserRole } from "@/lib/auth/types";
 import { useAppSelector } from "@/lib/hooks";
+import PageAnimation from "../ui/page-animation";
 
 const ranges = [
   { label: "Last 7 days", value: "7d" },
@@ -185,6 +186,7 @@ export default function Analytics({ analytics, role, range }: AnalyticsProps) {
     <main className="space-y-8">
       <Header title="Analytics">
         <Select
+          animation="list"
           value={range}
           onChange={(value) => {
             const params = new URLSearchParams(window.location.search);
@@ -195,193 +197,195 @@ export default function Analytics({ analytics, role, range }: AnalyticsProps) {
           placeholder="Select Period"
           name="analyticsRange"
           className="liquid-glass"
-          optionsClassName="w-42!"
+          optionsClassName="w-42! backdrop-blur-sm!"
         />
       </Header>
 
-      <section className="mx-auto w-full max-w-7xl space-y-7">
-        {metrics && isUser && personal && (
-          <div>
-            <h3 className="mb-3 px-1 font-semibold text-text-secondary">
-              My Account Analytics
-            </h3>
-            <div
-              className={`grid grid-cols-1 ${isSidebarOpen ? "md:grid-cols-1" : "md:grid-cols-2"} lg:grid-cols-4 gap-6`}
-            >
-              <MetricCard
-                title="Account Role"
-                value={formatLabel(personal.role)}
-                subtitle="Assigned access level"
-              />
-              <MetricCard
-                title="Account Status"
-                value={formatLabel(personal.status)}
-                subtitle="Current account state"
-              />
-              <MetricCard
-                title="Successful Logins"
-                value={metrics.successfulLogins}
-                subtitle="Success state"
-                valueTextColor="text-green"
-              />
-              <MetricCard
-                title="Audit Events"
-                value={metrics.auditEvents}
-                subtitle="Actions recorded"
-              />
-            </div>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
-              <LineChart
-                title={`My Login Trend · ${selectedRangeLabel}`}
-                data={analytics.loginTrends}
-                color="var(--color-accent)"
-                height={280}
-                gradientOpacity={0.3}
-                curve
-              />
-              {activityData.length > 0 && (
-                <BarChart
-                  title={`My Activity by Type · ${selectedRangeLabel}`}
-                  data={activityData}
-                  color="var(--color-yellow)"
-                  height={280}
+      <section className="mx-auto w-full max-w-7xl">
+        <PageAnimation className="space-y-7">
+          {metrics && isUser && personal && (
+            <div>
+              <h3 className="mb-3 px-1 font-semibold text-text-secondary">
+                My Account Analytics
+              </h3>
+              <div
+                className={`grid grid-cols-1 ${isSidebarOpen ? "md:grid-cols-1" : "md:grid-cols-2"} lg:grid-cols-4 gap-6`}
+              >
+                <MetricCard
+                  title="Account Role"
+                  value={formatLabel(personal.role)}
+                  subtitle="Assigned access level"
                 />
-              )}
+                <MetricCard
+                  title="Account Status"
+                  value={formatLabel(personal.status)}
+                  subtitle="Current account state"
+                />
+                <MetricCard
+                  title="Successful Logins"
+                  value={metrics.successfulLogins}
+                  subtitle="Success state"
+                  valueTextColor="text-green"
+                />
+                <MetricCard
+                  title="Audit Events"
+                  value={metrics.auditEvents}
+                  subtitle="Actions recorded"
+                />
+              </div>
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-6">
+                <LineChart
+                  title={`My Login Trend · ${selectedRangeLabel}`}
+                  data={analytics.loginTrends}
+                  color="var(--color-accent)"
+                  height={280}
+                  gradientOpacity={0.3}
+                  curve
+                />
+                {activityData.length > 0 && (
+                  <BarChart
+                    title={`My Activity by Type · ${selectedRangeLabel}`}
+                    data={activityData}
+                    color="var(--color-yellow)"
+                    height={280}
+                  />
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {metrics && hasTeamAnalytics && (
-          <>
-            {/* PLATFORM OVERVIEW */}
-            {hasTeamAnalytics && (
-              <>
-                <div>
-                  <h3 className="mb-2 px-4 font-semibold text-text-secondary">
-                    {isSuperAdmin ? "Platform Overview" : "Team Overview"}
-                  </h3>
+          {metrics && hasTeamAnalytics && (
+            <>
+              {/* PLATFORM OVERVIEW */}
+              {hasTeamAnalytics && (
+                <>
+                  <div>
+                    <h3 className="mb-2 px-4 font-semibold text-text-secondary">
+                      {isSuperAdmin ? "Platform Overview" : "Team Overview"}
+                    </h3>
 
-                  <div
-                    className={`grid ${isSidebarOpen ? "md:grid-cols-1" : "md:grid-cols-2"} grid-cols-1 gap-6 lg:grid-cols-4`}
-                  >
-                    <MetricCard
-                      title="Total Users"
-                      value={metrics.totalUsers}
-                      subtitle="All registered accounts"
+                    <div
+                      className={`grid ${isSidebarOpen ? "md:grid-cols-1" : "md:grid-cols-2"} grid-cols-1 gap-6 lg:grid-cols-4`}
+                    >
+                      <MetricCard
+                        title="Total Users"
+                        value={metrics.totalUsers}
+                        subtitle="All registered accounts"
+                      />
+
+                      <MetricCard
+                        title="Active Users"
+                        value={metrics.activeUsers}
+                        subtitle="Currently active accounts"
+                        valueTextColor="text-green"
+                      />
+
+                      <MetricCard
+                        title="New Users"
+                        value={metrics.newUsers}
+                        subtitle={`${metrics.newUsersChange >= 0 ? "+" : ""}${metrics.newUsersChange}% vs previous period`}
+                        valueTextColor="text-blue"
+                      />
+
+                      <MetricCard
+                        title="Audit Events"
+                        value={metrics.auditEvents}
+                        subtitle="Recorded operational events"
+                      />
+                    </div>
+                  </div>
+
+                  {/* USER GROWTH */}
+
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <LineChart
+                      title={`Cumulative Registrations · ${selectedRangeLabel}`}
+                      data={analytics.userGrowth}
+                      color="var(--color-accent)"
+                      height={280}
+                      gradientOpacity={0.3}
+                      curve
                     />
 
-                    <MetricCard
-                      title="Active Users"
-                      value={metrics.activeUsers}
-                      subtitle="Currently active accounts"
-                      valueTextColor="text-green"
-                    />
-
-                    <MetricCard
-                      title="New Users"
-                      value={metrics.newUsers}
-                      subtitle={`${metrics.newUsersChange >= 0 ? "+" : ""}${metrics.newUsersChange}% vs previous period`}
-                      valueTextColor="text-blue"
-                    />
-
-                    <MetricCard
-                      title="Audit Events"
-                      value={metrics.auditEvents}
-                      subtitle="Recorded operational events"
+                    <BarChart
+                      title={`New Registrations · ${selectedRangeLabel}`}
+                      data={analytics.monthlyRegistrations}
+                      color="var(--color-green)"
+                      height={280}
                     />
                   </div>
-                </div>
 
-                {/* USER GROWTH */}
+                  {/* USER DISTRIBUTION */}
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <LineChart
-                    title={`Cumulative Registrations · ${selectedRangeLabel}`}
-                    data={analytics.userGrowth}
-                    color="var(--color-accent)"
-                    height={280}
-                    gradientOpacity={0.3}
-                    curve
-                  />
-
-                  <BarChart
-                    title={`New Registrations · ${selectedRangeLabel}`}
-                    data={analytics.monthlyRegistrations}
-                    color="var(--color-green)"
-                    height={280}
-                  />
-                </div>
-
-                {/* USER DISTRIBUTION */}
-
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <PieChart
-                    isSidebarOpen={isSidebarOpen}
-                    title="Role Distribution"
-                    data={roleData}
-                    size={260}
-                    showLegend
-                    showPercentage
-                    showTotal
-                  />
-
-                  <PieChart
-                    isSidebarOpen={isSidebarOpen}
-                    title="Account Status"
-                    data={statusData}
-                    size={260}
-                    showLegend
-                    showPercentage
-                    showTotal
-                  />
-                </div>
-              </>
-            )}
-
-            {/* LOGIN ACTIVITY */}
-            <div className="grid grid-cols-1">
-              <LineChart
-                title={`Login Trends · ${selectedRangeLabel}`}
-                data={analytics.loginTrends}
-                color="var(--color-accent)"
-                height={280}
-                gradientOpacity={0.3}
-                curve
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {activityData.length > 0 && (
-                <PieChart
-                  isSidebarOpen={isSidebarOpen}
-                  title={`Audit Activity Mix · ${selectedRangeLabel}`}
-                  data={activityData}
-                  size={260}
-                  showLegend
-                  showPercentage
-                  showTotal
-                />
-              )}
-
-              {/* USER ENGAGEMENT OVERVIEW */}
-              {canViewManagement && (
-                <>
-                  <ChartSection
-                    title="Engagement Summary"
-                    description="Accounts classified by login activity during the selected period."
-                  >
-                    <Table
-                      columns={engagementColumns}
-                      data={engagementRows}
-                      getRowKey={(row) => row.category}
-                      emptyMessage="No engagement data available."
+                  <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <PieChart
+                      isSidebarOpen={isSidebarOpen}
+                      title="Role Distribution"
+                      data={roleData}
+                      size={260}
+                      showLegend
+                      showPercentage
+                      showTotal
                     />
-                  </ChartSection>
+
+                    <PieChart
+                      isSidebarOpen={isSidebarOpen}
+                      title="Account Status"
+                      data={statusData}
+                      size={260}
+                      showLegend
+                      showPercentage
+                      showTotal
+                    />
+                  </div>
                 </>
               )}
-            </div>
-          </>
-        )}
+
+              {/* LOGIN ACTIVITY */}
+              <div className="grid grid-cols-1">
+                <LineChart
+                  title={`Login Trends · ${selectedRangeLabel}`}
+                  data={analytics.loginTrends}
+                  color="var(--color-accent)"
+                  height={280}
+                  gradientOpacity={0.3}
+                  curve
+                />
+              </div>
+
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                {activityData.length > 0 && (
+                  <PieChart
+                    isSidebarOpen={isSidebarOpen}
+                    title={`Audit Activity Mix · ${selectedRangeLabel}`}
+                    data={activityData}
+                    size={260}
+                    showLegend
+                    showPercentage
+                    showTotal
+                  />
+                )}
+
+                {/* USER ENGAGEMENT OVERVIEW */}
+                {canViewManagement && (
+                  <>
+                    <ChartSection
+                      title="Engagement Summary"
+                      description="Accounts classified by login activity during the selected period."
+                    >
+                      <Table
+                        columns={engagementColumns}
+                        data={engagementRows}
+                        getRowKey={(row) => row.category}
+                        emptyMessage="No engagement data available."
+                      />
+                    </ChartSection>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+        </PageAnimation>
       </section>
     </main>
   );

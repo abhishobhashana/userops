@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { randomBytes } from "node:crypto";
 
 import { connectDatabase } from "@/lib/db/mongoose";
 import { requireApiRole } from "@/lib/api-auth";
@@ -8,8 +9,10 @@ import { toPublicUser } from "@/lib/auth/user";
 import type { UserRole } from "@/lib/auth/types";
 import { createAuditLog } from "@/lib/audit";
 import { getRequestIp, getUserAgent } from "@/lib/request";
-import { createAccountSchema } from "@/lib/validation";
+import { createManagedUserSchema } from "@/lib/validation";
 import { User } from "@/models/User";
+import { generateRecoveryCode, hashRecoveryCode } from "@/lib/auth/recovery";
+import { getVisibleManagedUserIds } from "@/lib/users/ownership";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,7 +50,14 @@ export async function GET() {
 
     await connectDatabase();
 
-    const users = await User.find()
+    const visibleIds = await getVisibleManagedUserIds(
+      auth.user.userId,
+      auth.user.role,
+    );
+
+    const users = await User.find(
+      visibleIds ? { _id: { $in: visibleIds } } : {},
+    )
       .select("-passwordHash -mfa.secretEncrypted")
       .sort({ createdAt: -1 })
       .lean();
@@ -71,7 +81,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const auth = await requireApiRole(["SUPER_ADMIN", "ADMIN"]);
+    const auth = await requireApiRole(["SUPER_ADMIN", "ADMIN", "MANAGER"]);
 
     if (auth.error) {
       return auth.error;
@@ -79,13 +89,21 @@ export async function POST(request: NextRequest) {
 
     await connectDatabase();
 
-    const body = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json(
+        { success: false, message: "Invalid JSON request body" },
+        { status: 400 },
+      );
+    }
 
     /*
      * User creation uses the same core account
      * validation as public registration.
      */
-    const result = createAccountSchema.safeParse(body);
+    const result = createManagedUserSchema.safeParse(body);
 
     if (!result.success) {
       const fields = getValidationFields(result.error.issues);
@@ -104,24 +122,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { first_name, last_name, email, password } = result.data;
+    const { first_name, last_name, email, role: requestedRole } = result.data;
 
-    const role = body?.role;
-
-    if (
-      typeof role !== "string" ||
-      !CREATE_USER_ROLES.includes(role as UserRole)
-    ) {
-      return Response.json(
-        {
-          success: false,
-          message: "Invalid user role",
-        },
-        { status: 400 },
-      );
+    if (!CREATE_USER_ROLES.includes(requestedRole)) {
+      return Response.json({ success: false, message: "Invalid user role" }, { status: 400 });
     }
-
-    const requestedRole = role as UserRole;
 
     if (!canManageRole(auth.user.role, requestedRole)) {
       return Response.json(
@@ -153,13 +158,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const passwordHash = await hashPassword(password);
+    const temporaryPassword = `Uo!${randomBytes(24).toString("base64url")}9A`;
+    const passwordHash = await hashPassword(temporaryPassword);
+    const recoveryCode = generateRecoveryCode();
+    const recoveryCodeHash = hashRecoveryCode(recoveryCode);
 
     const user = await User.create({
       first_name: normalizedFirstName,
       last_name: normalizedLastName,
       email: normalizedEmail,
       passwordHash,
+      recoveryCodeHash,
       role: requestedRole,
       status: "ACTIVE",
     });
@@ -182,6 +191,10 @@ export async function POST(request: NextRequest) {
         message: "User created successfully",
         data: {
           user: toPublicUser(user),
+          credentials: {
+            temporaryPassword,
+            recoveryCode,
+          },
         },
       },
       { status: 201 },
