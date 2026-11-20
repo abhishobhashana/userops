@@ -60,6 +60,22 @@ export const metadata: Metadata = {
     description:
       "Manage users, access, activity, analytics, and audit trails from one operational workspace.",
     url: "https://userops.vercel.app",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "UserOps — User Operations Platform",
+      },
+    ],
+  },
+
+  twitter: {
+    card: "summary_large_image",
+    title: "UserOps — User Operations Platform",
+    description:
+      "Manage users, access, activity, analytics, and audit trails from one operational workspace.",
+    images: "/og-image.png",
   },
 
   robots: {
